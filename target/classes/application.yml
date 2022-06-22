@@ -1,0 +1,9 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://localhost:5432/search_engine?rewriteBatchedStatements=true
+    username: search_engine
+    password: search_engine
+    driver-class-name: org.postgresql.Driver
+
+someParameter:
+  value: 5463
