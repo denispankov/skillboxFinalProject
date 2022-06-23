@@ -33,6 +33,8 @@ public class SiteIndexerTask extends RecursiveAction {
         List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(mainPageURL)).distinct().collect(Collectors.toList());
         linksSet.addAll(newPageLinks);
 
+        System.out.println(newPageLinks);
+
         if (pageLink == mainPageURL){
             DBHandler.beginBatchInsertIndex();
         }
