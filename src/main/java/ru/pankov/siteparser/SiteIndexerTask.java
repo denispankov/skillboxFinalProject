@@ -1,5 +1,6 @@
 package ru.pankov.siteparser;
 
+import org.springframework.beans.factory.annotation.Autowired;
 import ru.pankov.dbhandler.DBHandler;
 
 import java.util.ArrayList;
@@ -12,6 +13,7 @@ public class SiteIndexerTask extends RecursiveAction {
     private String pageLink;
     private Set<String> linksSet;
     private String mainPageURL;
+    private DBHandler dbHandler = DBHandler.getInstance();
 
     public SiteIndexerTask(String pageLink, Set<String> linksSet, String mainPageURL) {
         this.pageLink = pageLink;
@@ -35,11 +37,8 @@ public class SiteIndexerTask extends RecursiveAction {
 
         System.out.println(newPageLinks);
 
-        if (pageLink == mainPageURL){
-            DBHandler.beginBatchInsertIndex();
-        }
 
-        DBHandler.addToBatchInsertIndex(pageLink, newPage.getStatusCode(), newPage.getContent());
+        dbHandler.createPageIndex(newPage);
 
         List<SiteIndexerTask> taskList = new ArrayList<>();
         for (String link : newPageLinks) {
@@ -53,8 +52,5 @@ public class SiteIndexerTask extends RecursiveAction {
             task.join();
         }
 
-        if (pageLink == mainPageURL){
-            DBHandler.flushInsertIndex();
-        }
     }
 }

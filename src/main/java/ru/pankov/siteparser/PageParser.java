@@ -26,6 +26,6 @@ public class PageParser {
             //e.printStackTrace();
         }
 
-        return new Page(pageLinks, statusCode, content);
+        return new Page(pageLinks, statusCode, content, url);
     }
 }

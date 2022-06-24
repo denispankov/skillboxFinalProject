@@ -8,12 +8,9 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.jdbc.core.JdbcTemplate;
-import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.siteparser.SiteIndexer;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.Arrays;
 
 @SpringBootApplication
 public class Application {
@@ -26,15 +23,14 @@ public class Application {
         return args -> {
 
             SiteIndexer site = new SiteIndexer("https://dombulgakova.ru/");
-
-            //site.createIndex();
-            Lemmatizer lemmatizer = new Lemmatizer();
+            site.createIndex();
+            /*Lemmatizer lemmatizer = new Lemmatizer();
 
             String text = "Повторное появление леопарда в Осетии позволяет предположить, что\n" +
                     "леопард постоянно обитает в некоторых районах Северного Кавказа";
 
             Map<String, Long> lemmas = lemmatizer.getLemmas(text.toLowerCase());
-            System.out.println(lemmas);
+            System.out.println(lemmas);*/
         };
     }
 }

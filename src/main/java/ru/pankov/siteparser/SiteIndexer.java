@@ -11,6 +11,7 @@ import java.util.concurrent.ForkJoinPool;
 public class SiteIndexer {
     private Set<String> linksSet;
     private String mainPageUrl;
+    private SiteIndexerTask initTask;
 
     public SiteIndexer(String siteMainPageUrl) {
         linksSet = Collections.synchronizedSet(new HashSet<>());
@@ -20,5 +21,6 @@ public class SiteIndexer {
 
     public void createIndex() {
         new ForkJoinPool().invoke(new SiteIndexerTask(mainPageUrl, linksSet, mainPageUrl));
+        System.out.println("Parse ended");
     }
 }
