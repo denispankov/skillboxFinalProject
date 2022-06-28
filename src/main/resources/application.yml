@@ -4,6 +4,8 @@ spring:
     username: search_engine
     password: search_engine
     driver-class-name: org.postgresql.Driver
+  main:
+    banner-mode: off
 
 someParameter:
   value: 5463

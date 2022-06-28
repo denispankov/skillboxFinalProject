@@ -10,11 +10,15 @@ public class Page {
     private int statusCode;
     private String content;
     private String pageLink;
+    private String contentText;
+    private String titleText;
 
-    public Page(List<String> links, int statusCode, String content, String pageLink) {
+    public Page(List<String> links, int statusCode, String content, String pageLink, String contentLemmas, String titleLemmas) {
         this.links = links;
         this.statusCode = statusCode;
         this.content = content;
         this.pageLink = pageLink;
+        this.contentText = contentLemmas;
+        this.titleText = titleLemmas;
     }
 }

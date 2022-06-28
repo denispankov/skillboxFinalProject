@@ -13,17 +13,20 @@ import ru.pankov.siteparser.SiteIndexer;
 import java.util.Arrays;
 
 @SpringBootApplication
-public class Application {
+public class Application implements CommandLineRunner{
     public static void main(String[] args) {
-        SpringApplication.run(Application.class, args);
+        System.out.println("App run");
+        SpringApplication app = new SpringApplication(Application.class);
+        app.run(args);
+        System.out.println("App finished");
     }
 
-    @Bean
-    public CommandLineRunner commandLineRunner(ApplicationContext ctx, JdbcTemplate jdbcTemplate){
-        return args -> {
 
-            SiteIndexer site = new SiteIndexer("https://dombulgakova.ru/");
-            site.createIndex();
+    @Override
+    public void run(String... args) {
+        SiteIndexer site = new SiteIndexer("https://www.svetlovka.ru/");
+        site.createIndex();
+        System.out.println("Index created");
             /*Lemmatizer lemmatizer = new Lemmatizer();
 
             String text = "Повторное появление леопарда в Осетии позволяет предположить, что\n" +
@@ -31,6 +34,5 @@ public class Application {
 
             Map<String, Long> lemmas = lemmatizer.getLemmas(text.toLowerCase());
             System.out.println(lemmas);*/
-        };
     }
 }

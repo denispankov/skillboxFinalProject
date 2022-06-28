@@ -30,12 +30,14 @@ public class SiteIndexerTask extends RecursiveAction {
         }
         linksSet.add(pageLink);
 
-        Page newPage = PageParser.getAllLinks(pageLink);
+        if (mainPageURL.equals(pageLink)){
+            System.out.println("Start parsing");
+        }
+
+        Page newPage = PageParser.parse(pageLink);
         List<String> pageLinks = newPage.getLinks();
         List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(mainPageURL)).distinct().collect(Collectors.toList());
         linksSet.addAll(newPageLinks);
-
-        System.out.println(newPageLinks);
 
 
         dbHandler.createPageIndex(newPage);
@@ -48,8 +50,11 @@ public class SiteIndexerTask extends RecursiveAction {
         }
 
 
-        for (SiteIndexerTask task : taskList) {
-            task.join();
+        if (mainPageURL.equals(pageLink)){
+            for (SiteIndexerTask task : taskList) {
+                task.join();
+            }
+            System.out.println("End parsing");
         }
 
     }
