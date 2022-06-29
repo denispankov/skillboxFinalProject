@@ -1,7 +1,7 @@
+create database search_engine;
 CREATE USER search_engine WITH PASSWORD 'search_engine';
 GRANT CONNECT ON DATABASE search_engine TO search_engine;
 
-drop table page;
 create table page(
 id serial PRIMARY key,
 path TEXT NOT NULL,
@@ -10,10 +10,7 @@ content text NOT NULL
 );
 create unique index path_idx on page(path);
 grant select, insert on page to search_engine;
-GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO search_engine;
 
-delete from page;
-delete from lemma; 
 
 create table field(
 id serial PRIMARY key,
@@ -40,7 +37,8 @@ create table index(
 id serial PRIMARY key,
 page_id integer  NOT NULL,
 lemma_id integer NOT NULL,
-rank real NOT NULL
+rank numeric NOT NULL
 );
 
 grant select, insert on index to search_engine;
+GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO search_engine;

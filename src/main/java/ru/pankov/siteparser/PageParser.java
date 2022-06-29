@@ -4,14 +4,16 @@ import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
+import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
 import java.util.List;
 
+@Component
 public class PageParser {
 
 
-    static public Page parse(String url) {
+     public Page parse(String url) {
         List<String> pageLinks = new ArrayList<>();
         int statusCode = 200;
         String content = "";
