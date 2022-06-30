@@ -11,6 +11,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class Lemmatizer {
@@ -24,7 +25,7 @@ public class Lemmatizer {
         }
     }
 
-    public Map<String, Long> getLemmas(String text) {
+    public List<Lemma> getLemmas(String text) {
         List<String> filteredWords = new ArrayList<>();
         String textForLemmas = text.toLowerCase().replaceAll("[^А-я ]", "");
         if (textForLemmas != "") {
@@ -42,6 +43,6 @@ public class Lemmatizer {
             }
         }
 
-        return filteredWords.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        return filteredWords.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().map(e-> new Lemma(e.getKey(), e.getValue())).collect(Collectors.toList());
     }
 }

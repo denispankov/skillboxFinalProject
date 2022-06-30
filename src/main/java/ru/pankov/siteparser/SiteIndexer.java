@@ -42,10 +42,6 @@ public class SiteIndexer {
         System.out.println("Indexing start");
         ForkJoinPool forkJoinPool = new ForkJoinPool();
         forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl));
-        dbHandler.shutdownMainThread();
-        while (dbHandler.isMainThreadRunning()){
-
-        }
         System.out.println("Indexing finish");
     }
 }

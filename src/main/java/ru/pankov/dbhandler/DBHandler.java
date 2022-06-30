@@ -1,53 +1,81 @@
 package ru.pankov.dbhandler;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Component;
+import ru.pankov.lemmanization.Lemma;
 import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.siteparser.Page;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
-import java.util.ArrayDeque;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Queue;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
 public class DBHandler {
-    private Connection connection;
-    @Value("${spring.datasource.url}")
-    private String dbURL;
-    @Value("${spring.datasource.username}")
-    private String dbUser;
-    @Value("${spring.datasource.password}")
-    private String dbPass;
     private volatile Queue<Page> queuePage = new ArrayDeque<>();
-    private MainThread mainThread;
-    Lemmatizer lemmatizer;
-    private class MainThread extends Thread{
-        private boolean isShutdown = false;
-
-        public void setShutdown(boolean shutdown) {
-            isShutdown = shutdown;
-        }
-
-        public void run() {
+    private QueueControllerThread queueThread;
+    private Lemmatizer lemmatizer;
+    private ConnectionPool connectionPool;
+    private List<DBWriteThread> dbWriteThreads;
+    private class QueueControllerThread extends Thread{
+        public void run(){
             int timeOfDoNothing = 0;
-            while (true) {
-                if (timeOfDoNothing >= 3 && isShutdown == true){
+            DBWriteThread DBThread = new DBWriteThread();
+            DBThread.start();
+            dbWriteThreads = new ArrayList<>();
+            dbWriteThreads.add(DBThread);
+            while(true) {
+                if (timeOfDoNothing >= 5 && !existActiveDBWriter()){
+                    connectionPool.close();
                     return;
                 }
-                Page page = queuePage.poll();
+                if(queuePage.size() > 50) {
+                    timeOfDoNothing = 0;
+                    DBThread = new DBWriteThread();
+                    DBThread.start();
+                    dbWriteThreads.add(DBThread);
+                } else if (queuePage.size() == 0){
+                    timeOfDoNothing++;
+                    try {
+                        Thread.sleep(1000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
+                } else {
+                    timeOfDoNothing = 0;
+                }
+            }
+        }
+    }
+    private class DBWriteThread extends Thread{
+        Connection connection;
+        public DBWriteThread(){
+            super();
+            connection = connectionPool.getConnection();
+        }
+
+        public void close(){
+            connectionPool.putConnection(connection);
+        }
+        public void run() {
+            int timeOfDoNothing = 0;
+            Page page;
+            while (true) {
+                if (timeOfDoNothing >= 10){
+                    close();
+                    return;
+                }
+                synchronized (queuePage){
+                    page = queuePage.poll();
+                }
                 if (page != null) {
                     timeOfDoNothing = 0;
                     try {
                         connection.setSavepoint();
-                        insertPage(page);
-                        insertLemmas(page);
+                        insertPage(page, connection);
+                        insertLemmas(page, connection);
                         connection.commit();
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -74,24 +102,43 @@ public class DBHandler {
         this.lemmatizer = lemmatizer;
     }
 
-    private void insertPage(Page page) throws SQLException{
+    @Autowired
+    public void setConnectionPool(ConnectionPool connectionPool){
+        this.connectionPool = connectionPool;
+    }
+
+    private boolean existActiveDBWriter(){
+        for (int i = 0; i < dbWriteThreads.size(); i++){
+            if(dbWriteThreads.get(i).isAlive()){
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private void insertPage(Page page, Connection connection) throws SQLException{
         String sqlPage = "INSERT INTO page (path, code, content) VALUES ('" + page.getPageLink() + "'," + page.getStatusCode() + ",quote_literal($$" + page.getContent() + "$$))";
         Statement statement = connection.createStatement();
         statement.execute(sqlPage);
     }
 
-    private void insertLemmas(Page page) throws SQLException{
-        Map<String, Double> lemmasTitle = lemmatizer.getLemmas(page.getTitleText()).entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e -> Double.parseDouble(e.getValue().toString())));
-        Map<String, Double> lemmasBody = lemmatizer.getLemmas(page.getContentText()).entrySet().stream().collect(Collectors.toMap(e->e.getKey(), e -> Double.parseDouble(e.getValue().toString()) * 0.8));
-        Map<String, Double> lemmas = Stream.of(lemmasBody, lemmasTitle).flatMap(map -> map.entrySet().stream()).collect(Collectors.toMap(
-                Map.Entry::getKey,
-                Map.Entry::getValue,
+    private void insertLemmas(Page page, Connection connection) throws SQLException{
+        List<Lemma> lemmasTitle = lemmatizer.getLemmas(page.getTitleText());
+        List<Lemma> lemmasBody = lemmatizer.getLemmas(page.getContentText());
+        lemmasTitle.forEach(l->l.setRank(l.getCount()));
+        lemmasBody.forEach(l->l.setRank(l.getCount() * 0.8));
+        Map<String, Double> lemmasMap = Stream.concat(lemmasBody.stream(), lemmasTitle.stream()).collect(Collectors.toMap(
+                Lemma::getLemma,
+                Lemma::getRank,
                 (value1, value2) -> value1 + value2));
+        List<Lemma> lemmas = lemmasMap.entrySet().stream()
+                                                .map(l-> new Lemma(l.getKey(), l.getValue()))
+                                                .sorted(Comparator.comparing(Lemma::getLemma)).collect(Collectors.toList());
         if (lemmasTitle.size()!=0 | lemmasBody.size() != 0) {
             StringBuilder sqlLemmas = new StringBuilder();
             sqlLemmas.append("INSERT INTO lemma (lemma, frequency) values");
-            for (Map.Entry lemma : lemmas.entrySet()) {
-                sqlLemmas.append("('" + lemma.getKey() + "', " + 1 + "),");
+            for (Lemma lemma : lemmas) {
+                sqlLemmas.append("('" + lemma.getLemma() + "', " + 1 + "),");
             }
             sqlLemmas.delete(sqlLemmas.length() - 1, sqlLemmas.length());
             sqlLemmas.append("ON CONFLICT (lemma) DO UPDATE " +
@@ -107,12 +154,12 @@ public class DBHandler {
             ResultSet rs = statement.executeQuery(getPageSql);
             rs.next();
             int pageId = rs.getInt("id");
-            for (Map.Entry lemma : lemmas.entrySet()) {
+            for (Lemma lemma : lemmas) {
                 sqlIndex.append("select " + pageId +
                                 ",l.id" +
-                                "," + String.format(Locale.US,"%.2f",lemma.getValue()) +
+                                "," + String.format(Locale.US,"%.2f",lemma.getRank()) +
                                 " from lemma l " +
-                                "where l.id  = (select id from lemma l where l.lemma = '"+lemma.getKey()+"') " +
+                                "where l.id  = (select id from lemma l where l.lemma = '"+lemma.getLemma()+"') " +
                                 "union all ");
             }
             sqlIndex.delete(sqlIndex.length() - 10, sqlIndex.length());
@@ -120,33 +167,16 @@ public class DBHandler {
             statement.execute(sqlIndex.toString());
         }
     }
-    public DBHandler(){
-
-    }
-
-    @PostConstruct
-    public void init() {
-        mainThread = new MainThread();
-        mainThread.start();
-
-        try {
-            connection = DriverManager.getConnection(
-                    dbURL, dbUser, dbPass);
-            connection.setAutoCommit(false);
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
-    }
 
     public void createPageIndex(Page page){
         queuePage.add(page);
     }
 
-    public void shutdownMainThread(){
-        mainThread.setShutdown(true);
-    }
-
-    public boolean isMainThreadRunning(){
-        return mainThread.isAlive();
+    @PostConstruct
+    private void init(){
+        if (queueThread == null) {
+            queueThread = new QueueControllerThread();
+            queueThread.start();
+        }
     }
 }
