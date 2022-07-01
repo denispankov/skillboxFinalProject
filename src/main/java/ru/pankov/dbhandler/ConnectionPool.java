@@ -29,7 +29,8 @@ public class ConnectionPool {
 
     public Connection getConnection(){
         try {
-            return connectionsQueue.poll(60, TimeUnit.SECONDS);
+            System.out.println("Try to pull. Before pull - " + connectionsQueue.size());
+            return connectionsQueue.poll(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -37,9 +38,14 @@ public class ConnectionPool {
         return null;
     }
 
+    public int getCurrentAvailableConnections(){
+        return connectionsQueue.size();
+    }
+
     public void putConnection(Connection con){
         try {
             connectionsQueue.put(con);
+            System.out.println("Try to put. After put - " + connectionsQueue.size());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

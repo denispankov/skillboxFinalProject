@@ -71,11 +71,10 @@ public class SiteIndexerTask extends RecursiveAction {
             taskList.add(task);
         }
 
-
+        for (SiteIndexerTask task : taskList) {
+            task.join();
+        }
         if (mainPageURL.equals(pageLink)){
-            for (SiteIndexerTask task : taskList) {
-                task.join();
-            }
             System.out.println("End parsing");
         }
 

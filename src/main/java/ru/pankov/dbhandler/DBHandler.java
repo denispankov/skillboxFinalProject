@@ -9,12 +9,15 @@ import ru.pankov.siteparser.Page;
 import javax.annotation.PostConstruct;
 import java.sql.*;
 import java.util.*;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Component
 public class DBHandler {
-    private volatile Queue<Page> queuePage = new ArrayDeque<>();
+    private volatile BlockingQueue<Page> queuePage = new ArrayBlockingQueue<>(10000);
     private QueueControllerThread queueThread;
     private Lemmatizer lemmatizer;
     private ConnectionPool connectionPool;
@@ -28,14 +31,21 @@ public class DBHandler {
             dbWriteThreads.add(DBThread);
             while(true) {
                 if (timeOfDoNothing >= 5 && !existActiveDBWriter()){
+                    System.out.println("connection pull closed");
                     connectionPool.close();
                     return;
                 }
-                if(queuePage.size() > 50) {
+                if(queuePage.size() > 50 && connectionPool.getCurrentAvailableConnections() > 0) {
+                    System.out.println("Create new db thread. QueuePage size is " + queuePage.size());
                     timeOfDoNothing = 0;
                     DBThread = new DBWriteThread();
                     DBThread.start();
                     dbWriteThreads.add(DBThread);
+                    try {
+                        Thread.sleep(5000);
+                    } catch (InterruptedException e) {
+                        e.printStackTrace();
+                    }
                 } else if (queuePage.size() == 0){
                     timeOfDoNothing++;
                     try {
@@ -61,14 +71,16 @@ public class DBHandler {
         }
         public void run() {
             int timeOfDoNothing = 0;
-            Page page;
+            Page page = null;
             while (true) {
-                if (timeOfDoNothing >= 10){
+                if (timeOfDoNothing >= 2){
                     close();
                     return;
                 }
-                synchronized (queuePage){
-                    page = queuePage.poll();
+                try {
+                    page = queuePage.poll(5, TimeUnit.SECONDS);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
                 }
                 if (page != null) {
                     timeOfDoNothing = 0;

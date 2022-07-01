@@ -7,3 +7,7 @@ spring:
     connection-pool-size: 10
   main:
     banner-mode: off
+
+site-list: https://www.svetlovka.ru/
+          ,https://www.lutherancathedral.ru/
+          ,https://nikoartgallery.com/
