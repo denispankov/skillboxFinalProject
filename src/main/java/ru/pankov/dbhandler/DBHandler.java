@@ -4,6 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.pankov.lemmanization.Lemma;
 import ru.pankov.lemmanization.Lemmatizer;
+import ru.pankov.search.SearchResult;
 import ru.pankov.siteparser.Page;
 
 import javax.annotation.PostConstruct;
@@ -21,6 +22,7 @@ public class DBHandler {
     private QueueControllerThread queueThread;
     private Lemmatizer lemmatizer;
     private ConnectionPool connectionPool;
+    private ConnectionPool connectionPoolRead;
     private List<DBWriteThread> dbWriteThreads;
     private class QueueControllerThread extends Thread{
         public void run(){
@@ -119,6 +121,11 @@ public class DBHandler {
         this.connectionPool = connectionPool;
     }
 
+    @Autowired
+    public void setConnectionPoolRead(ConnectionPool connectionPool){
+        this.connectionPoolRead = connectionPool;
+    }
+
     private boolean existActiveDBWriter(){
         for (int i = 0; i < dbWriteThreads.size(); i++){
             if(dbWriteThreads.get(i).isAlive()){
@@ -178,6 +185,70 @@ public class DBHandler {
             statement = connection.createStatement();
             statement.execute(sqlIndex.toString());
         }
+    }
+
+    public List<SearchResult> search(List<Lemma> lemmas){
+        Connection connection = connectionPoolRead.getConnection();;
+        StringBuilder lemmasIntoSQL = new StringBuilder();
+        List<SearchResult> searchResults = new ArrayList<>();
+        for(Lemma lemma: lemmas){
+            lemmasIntoSQL.append("'" + lemma.getLemma() + "', ");
+        }
+        lemmasIntoSQL.delete(lemmasIntoSQL.length() - 2 , lemmasIntoSQL.length() - 1);
+        String searchSql = "with quantity_lemmas as (" +
+                " select count(1) cnt" +
+                "  from lemma" +
+                ")," +
+                "lemmas as (" +
+                "select l.lemma " +
+                "  ,l.frequency " +
+                "  ,l.id " +
+                "  from lemma l" +
+                " where l.lemma in ("+ lemmasIntoSQL +")" +
+                ")," +
+                "tempor as (select l.lemma " +
+                "  ,l.frequency " +
+                "  ,l.frequency::float / (select cnt from quantity_lemmas) percent" +
+                "  ,l.id" +
+                "  from lemmas l)," +
+                " res as (select string_agg(t.lemma, ', ') agg" +
+                "    ,sum(i.\"rank\") rel" +
+                "    ,count(1) cnt" +
+                "    ,(select  count(1) from lemmas) cnt_all" +
+                "    ,i.page_id " +
+                "   from tempor t" +
+                "   join \"index\" i on i.lemma_id = t.id" +
+                "  where t.percent <= 0.055" +
+                "  group by i.page_id )," +
+                "  resul as (select r.agg" +
+                "  ,r.cnt" +
+                "  ,r.cnt_all" +
+                "  ,r.rel / (select max(r.rel) from res r) rel_rel" +
+                "  ,r.page_id" +
+                "    from res r" +
+                "   order by cnt desc,5 desc)" +
+                "   select l.*" +
+                "   ,p.\"content\"" +
+                "   ,p.\"path\" " +
+                "     from resul l" +
+                "     join page p on p.id  = l.page_id" +
+                "    limit 10";
+        try {
+
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(searchSql);
+            while (rs.next()){
+                searchResults.add(new SearchResult(rs.getString("path"),
+                                                    rs.getString("content" ),
+                                                    rs.getString("content" ),
+                                                    rs.getDouble("rel_rel")));
+            };
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        connectionPoolRead.putConnection(connection);
+        return searchResults;
     }
 
     public void createPageIndex(Page page){

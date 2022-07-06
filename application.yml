@@ -4,10 +4,17 @@ spring:
     username: search_engine
     password: search_engine
     driver-class-name: org.postgresql.Driver
-    connection-pool-size: 10
+    connection-pool-size: 5
   main:
     banner-mode: off
 
-site-list: https://www.svetlovka.ru/
-          ,https://www.lutherancathedral.ru/
+site-list: http://www.playback.ru/
+          ,ttps://volochek.life/
+          ,http://radiomv.ru/
+          ,https://ipfran.ru/
+          ,https://dimonvideo.ru/
           ,https://nikoartgallery.com/
+          ,https://et-cetera.ru/mobile/
+          ,https://www.lutherancathedral.ru/
+          ,https://dombulgakova.ru/
+          ,https://www.svetlovka.ru/

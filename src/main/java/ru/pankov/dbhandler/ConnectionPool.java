@@ -1,6 +1,7 @@
 package ru.pankov.dbhandler;
 
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 
 import javax.annotation.PostConstruct;
@@ -14,6 +15,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.TimeUnit;
 
 @Component
+@Scope("prototype")
 public class ConnectionPool {
     @Value("${spring.datasource.url}")
     private String dbURL;
@@ -50,6 +52,7 @@ public class ConnectionPool {
             e.printStackTrace();
         }
     }
+
 
     @PostConstruct
     public void init(){

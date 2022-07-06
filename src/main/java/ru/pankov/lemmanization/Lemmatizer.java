@@ -33,7 +33,7 @@ public class Lemmatizer {
                 Arrays.stream(textForLemmas.split(" ")).forEach(word -> {
                     if (word != "") {
                         List<String> lemmas = luceneMorphology.getMorphInfo(word);
-                        if (!lemmas.get(0).matches(".*[СОЮЗ|МЕЖД|ПРЕДЛ]")) {
+                        if (!lemmas.get(0).matches(".*[СОЮЗ|МЕЖД|ПРЕДЛ|ЧАСТ]")) {
                             filteredWords.add(luceneMorphology.getNormalForms(word).get(0));
                         }
                     }
