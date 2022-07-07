@@ -24,8 +24,7 @@ public class ConnectionPool {
     @Value("${spring.datasource.password}")
     private String dbPass;
 
-    @Value("${spring.datasource.connection-pool-size}")
-    private int poolSize;
+    private int poolSize = 5;
     private List<Connection> connList = new ArrayList<>();
     private BlockingQueue<Connection> connectionsQueue;
 
