@@ -9,7 +9,7 @@ spring:
     banner-mode: off
 
 site-list: http://www.playback.ru/
-          ,ttps://volochek.life/
+          ,https://volochek.life/
           ,http://radiomv.ru/
           ,https://ipfran.ru/
           ,https://dimonvideo.ru/

@@ -12,6 +12,8 @@ public class Page {
     private String pageLink;
     private String contentText;
     private String titleText;
+    private int siteId;
+    private String relativePageLink;
 
     public Page(List<String> links, int statusCode, String content, String pageLink, String contentLemmas, String titleLemmas) {
         this.links = links;

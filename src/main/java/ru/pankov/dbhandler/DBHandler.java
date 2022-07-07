@@ -6,6 +6,7 @@ import ru.pankov.lemmanization.Lemma;
 import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.search.SearchResult;
 import ru.pankov.siteparser.Page;
+import ru.pankov.siteparser.PageParser;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
@@ -22,8 +23,9 @@ public class DBHandler {
     private QueueControllerThread queueThread;
     private Lemmatizer lemmatizer;
     private ConnectionPool connectionPool;
-    private ConnectionPool connectionPoolRead;
+    private ConnectionPool connectionPoolAdditional;
     private List<DBWriteThread> dbWriteThreads;
+    private PageParser pageParser;
     private class QueueControllerThread extends Thread{
         public void run(){
             int timeOfDoNothing = 0;
@@ -122,8 +124,13 @@ public class DBHandler {
     }
 
     @Autowired
-    public void setConnectionPoolRead(ConnectionPool connectionPool){
-        this.connectionPoolRead = connectionPool;
+    public void setConnectionPoolRead(ConnectionPool connectionPoolRead){
+        this.connectionPoolAdditional = connectionPoolRead;
+    }
+
+    @Autowired
+    public void setPageParser(PageParser pageParser) {
+        this.pageParser = pageParser;
     }
 
     private boolean existActiveDBWriter(){
@@ -136,7 +143,7 @@ public class DBHandler {
     }
 
     private void insertPage(Page page, Connection connection) throws SQLException{
-        String sqlPage = "INSERT INTO page (path, code, content) VALUES ('" + page.getPageLink() + "'," + page.getStatusCode() + ",quote_literal($$" + page.getContent() + "$$))";
+        String sqlPage = "INSERT INTO page (path, code, content, site_id) VALUES ('" + page.getRelativePageLink() + "'," + page.getStatusCode() + ",quote_literal($$" + page.getContent() + "$$), "+ page.getSiteId()+")";
         Statement statement = connection.createStatement();
         statement.execute(sqlPage);
     }
@@ -155,9 +162,9 @@ public class DBHandler {
                                                 .sorted(Comparator.comparing(Lemma::getLemma)).collect(Collectors.toList());
         if (lemmasTitle.size()!=0 | lemmasBody.size() != 0) {
             StringBuilder sqlLemmas = new StringBuilder();
-            sqlLemmas.append("INSERT INTO lemma (lemma, frequency) values");
+            sqlLemmas.append("INSERT INTO lemma (lemma, frequency, site_id) values");
             for (Lemma lemma : lemmas) {
-                sqlLemmas.append("('" + lemma.getLemma() + "', " + 1 + "),");
+                sqlLemmas.append("('" + lemma.getLemma() + "', " + 1 + ", " + page.getSiteId() + "),");
             }
             sqlLemmas.delete(sqlLemmas.length() - 1, sqlLemmas.length());
             sqlLemmas.append("ON CONFLICT (lemma) DO UPDATE " +
@@ -169,7 +176,7 @@ public class DBHandler {
             sqlIndex.append("insert into \"index\"(page_id, lemma_id, \"rank\")");
 
             statement = connection.createStatement();
-            String getPageSql = "select p.id from page p where p.path = '" + page.getPageLink() + "'";
+            String getPageSql = "select p.id from page p where p.path = '" +  page.getRelativePageLink() + "'";
             ResultSet rs = statement.executeQuery(getPageSql);
             rs.next();
             int pageId = rs.getInt("id");
@@ -188,7 +195,7 @@ public class DBHandler {
     }
 
     public List<SearchResult> search(List<Lemma> lemmas){
-        Connection connection = connectionPoolRead.getConnection();;
+        Connection connection = connectionPoolAdditional.getConnection();;
         StringBuilder lemmasIntoSQL = new StringBuilder();
         List<SearchResult> searchResults = new ArrayList<>();
         for(Lemma lemma: lemmas){
@@ -239,15 +246,15 @@ public class DBHandler {
             ResultSet rs = statement.executeQuery(searchSql);
             while (rs.next()){
                 searchResults.add(new SearchResult(rs.getString("path"),
-                                                    rs.getString("content" ),
-                                                    rs.getString("content" ),
+                                                    pageParser.getHTMLTitle(rs.getString("content" )),
+                                                    pageParser.getHTMLSnippet(rs.getString("content" ), lemmas),
                                                     rs.getDouble("rel_rel")));
             };
         }catch (Exception e){
             e.printStackTrace();
         }
 
-        connectionPoolRead.putConnection(connection);
+        connectionPoolAdditional.putConnection(connection);
         return searchResults;
     }
 
@@ -260,6 +267,43 @@ public class DBHandler {
         if (queueThread == null) {
             queueThread = new QueueControllerThread();
             queueThread.start();
+        }
+    }
+
+    public int addSite(String url){
+        String sql = "INSERT INTO site(status,status_time,last_error,url,name) values" +
+                "('INDEXING', CURRENT_TIMESTAMP, null, '"+ url +"', '" + url + "')" +
+                "ON CONFLICT (url) DO UPDATE SET status  = 'INDEXING'" +
+                "returning id;";
+        Connection connection = connectionPoolAdditional.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(sql.toString());
+            rs.next();
+            connection.commit();
+            connectionPoolAdditional.putConnection(connection);
+            return rs.getInt("id");
+        }catch (Exception e){
+            connectionPoolAdditional.putConnection(connection);
+            e.printStackTrace();
+        }
+
+        return 0;
+    }
+
+    public void changeSiteStatus(String status, int siteId){
+        String sql = "update site" +
+                "   set status = '" + status + "' " +
+                " where id  = "+ siteId +";";
+        Connection connection = connectionPoolAdditional.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sql);
+            connection.commit();
+            connectionPoolAdditional.putConnection(connection);
+        }catch (Exception e){
+            connectionPoolAdditional.putConnection(connection);
+            e.printStackTrace();
         }
     }
 }

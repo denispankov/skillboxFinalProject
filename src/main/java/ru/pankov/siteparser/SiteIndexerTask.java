@@ -21,11 +21,13 @@ public class SiteIndexerTask extends RecursiveAction {
     private DBHandler dbHandler;
     private PageParser pageParser;
     private ObjectProvider<SiteIndexerTask> taskObjectProvider;
+    private int siteId;
 
-    public SiteIndexerTask(String pageLink, Set<String> linksSet, String mainPageURL) {
+    public SiteIndexerTask(String pageLink, Set<String> linksSet, String mainPageURL, int siteId) {
         this.pageLink = pageLink;
         this.linksSet = linksSet;
         this.mainPageURL = mainPageURL;
+        this.siteId = siteId;
     }
 
     @Autowired
@@ -57,6 +59,8 @@ public class SiteIndexerTask extends RecursiveAction {
         }
 
         Page newPage = pageParser.parse(pageLink);
+        newPage.setSiteId(siteId);
+        newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
         List<String> pageLinks = newPage.getLinks();
         List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(mainPageURL)).distinct().collect(Collectors.toList());
         linksSet.addAll(newPageLinks);
@@ -66,7 +70,7 @@ public class SiteIndexerTask extends RecursiveAction {
 
         List<SiteIndexerTask> taskList = new ArrayList<>();
         for (String link : newPageLinks) {
-            SiteIndexerTask task =  taskObjectProvider.getObject(link, linksSet, mainPageURL);
+            SiteIndexerTask task =  taskObjectProvider.getObject(link, linksSet, mainPageURL, siteId);
             task.fork();
             taskList.add(task);
         }

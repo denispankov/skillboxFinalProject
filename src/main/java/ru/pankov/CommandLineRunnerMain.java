@@ -33,10 +33,10 @@ public class CommandLineRunnerMain implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
-        List<SearchResult> searchResults = searcher.search("пример случайного запроса");
-        /*for(int i = 0; i<siteList.length; i++){
+        //List<SearchResult> searchResults = searcher.search("пример случайного запроса");
+        for(int i = 0; i<siteList.length; i++){
             new SiteIndexThread(siteList[i]).start();
-        }*/
+        }
         System.out.println("Index created");
         /* TODO
         Перед переходом на веб

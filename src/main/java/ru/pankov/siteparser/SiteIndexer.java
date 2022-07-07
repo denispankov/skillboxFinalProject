@@ -16,7 +16,7 @@ import java.util.concurrent.ForkJoinPool;
 @Component
 @Scope("prototype")
 public class SiteIndexer {
-    private Set<String> linksSet;
+    private volatile Set<String> linksSet;
     private String mainPageUrl;
     private SiteIndexerTask initTask;
     private DBHandler dbHandler;
@@ -40,8 +40,10 @@ public class SiteIndexer {
 
     public void createIndex() {
         System.out.println("Indexing start");
+        int siteId = dbHandler.addSite(mainPageUrl);
         ForkJoinPool forkJoinPool = new ForkJoinPool();
-        forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl));
+        forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteId));
+        dbHandler.changeSiteStatus("INDEXED", siteId);
         System.out.println("Indexing finish");
     }
 }
