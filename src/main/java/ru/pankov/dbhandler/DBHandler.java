@@ -1,5 +1,6 @@
 package ru.pankov.dbhandler;
 
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import ru.pankov.lemmanization.Lemma;
@@ -7,6 +8,7 @@ import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.search.SearchResult;
 import ru.pankov.siteparser.Page;
 import ru.pankov.siteparser.PageParser;
+import ru.pankov.siteparser.SiteIndexerTask;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
@@ -20,6 +22,7 @@ import java.util.stream.Stream;
 @Component
 public class DBHandler {
     private volatile BlockingQueue<Page> queuePage = new ArrayBlockingQueue<>(10000);
+    private ObjectProvider<ConnectionPool> connectionPoolObjectProvider;
     private QueueControllerThread queueThread;
     private Lemmatizer lemmatizer;
     private ConnectionPool connectionPool;
@@ -268,6 +271,13 @@ public class DBHandler {
             queueThread = new QueueControllerThread();
             queueThread.start();
         }
+        connectionPool = connectionPoolObjectProvider.getObject(10);
+        connectionPoolAdditional = connectionPoolObjectProvider.getObject(3);
+    }
+
+    @Autowired
+    public void setConnectionPoolObjectProvider(ObjectProvider<ConnectionPool> connectionPoolObjectProvider) {
+        this.connectionPoolObjectProvider = connectionPoolObjectProvider;
     }
 
     public int addSite(String url){

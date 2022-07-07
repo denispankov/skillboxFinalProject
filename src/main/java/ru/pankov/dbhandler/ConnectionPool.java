@@ -29,6 +29,14 @@ public class ConnectionPool {
     private List<Connection> connList = new ArrayList<>();
     private BlockingQueue<Connection> connectionsQueue;
 
+    public ConnectionPool(){
+
+    }
+
+    public ConnectionPool(int poolSize){
+        this.poolSize = poolSize;
+    }
+
     public Connection getConnection(){
         try {
             System.out.println("Try to pull. Before pull - " + connectionsQueue.size());
