@@ -1,5 +1,8 @@
 package ru.pankov.dbhandler;
 
+import org.slf4j.Logger;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
@@ -28,6 +31,14 @@ public class ConnectionPool {
     private List<Connection> connList = new ArrayList<>();
     private BlockingQueue<Connection> connectionsQueue;
 
+    private Logger logger;
+
+    @Autowired
+    @Qualifier("logger")
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
+
     public ConnectionPool(){
 
     }
@@ -38,7 +49,7 @@ public class ConnectionPool {
 
     public Connection getConnection(){
         try {
-            System.out.println("Try to pull. Before pull - " + connectionsQueue.size());
+            logger.info("Try to pull. Before pull - " + connectionsQueue.size());
             return connectionsQueue.poll(1, TimeUnit.DAYS);
         } catch (InterruptedException e) {
             e.printStackTrace();
@@ -54,7 +65,7 @@ public class ConnectionPool {
     public void putConnection(Connection con){
         try {
             connectionsQueue.put(con);
-            System.out.println("Try to put. After put - " + connectionsQueue.size());
+            logger.info("Try to put. After put - " + connectionsQueue.size());
         } catch (InterruptedException e) {
             e.printStackTrace();
         }

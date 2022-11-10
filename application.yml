@@ -18,3 +18,6 @@ site-list: http://www.playback.ru/
           ,https://www.lutherancathedral.ru/
           ,https://dombulgakova.ru/
           ,https://www.svetlovka.ru/
+
+web-interface: /admin
+user-agent: XSearchBot

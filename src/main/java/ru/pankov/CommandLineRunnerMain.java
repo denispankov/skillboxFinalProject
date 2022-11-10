@@ -1,14 +1,13 @@
 package ru.pankov;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import ru.pankov.search.SearchResult;
 import ru.pankov.search.Searcher;
 import ru.pankov.siteparser.SiteIndexer;
-
-import java.util.List;
 
 
 public class CommandLineRunnerMain implements CommandLineRunner {
@@ -18,6 +17,14 @@ public class CommandLineRunnerMain implements CommandLineRunner {
     private String[] siteList;
     @Autowired
     private Searcher searcher;
+
+    private Logger logger;
+
+    @Autowired
+    @Qualifier("logger")
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
     private class SiteIndexThread extends Thread {
         private String siteUrl;
         public SiteIndexThread(String siteUrl){
@@ -33,14 +40,14 @@ public class CommandLineRunnerMain implements CommandLineRunner {
 
     @Override
     public void run(String... args) {
+        logger.info("All index start");
         //List<SearchResult> searchResults = searcher.search("пример случайного запроса");
         for(int i = 0; i<siteList.length; i++){
             new SiteIndexThread(siteList[i]).start();
         }
-        System.out.println("Index created");
+        logger.info("All index finished");
         /* TODO
         Перед переходом на веб
-        добавить логирование
         добавить юнит тесты
          */
     }

@@ -10,14 +10,7 @@ import org.springframework.context.annotation.Bean;
 public class Application {
 
     public static void main(String[] args) {
-        System.out.println("App run");
         SpringApplication app = new SpringApplication(Application.class);
         app.run(args);
-        System.out.println("App finished");
-    }
-
-    @Bean
-    public CommandLineRunner CommandLineRunnerBean() {
-        return new CommandLineRunnerMain();
     }
 }

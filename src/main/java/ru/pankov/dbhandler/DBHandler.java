@@ -1,7 +1,9 @@
 package ru.pankov.dbhandler;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
 import ru.pankov.lemmanization.Lemma;
 import ru.pankov.lemmanization.Lemmatizer;
@@ -29,6 +31,13 @@ public class DBHandler {
     private ConnectionPool connectionPoolAdditional;
     private List<DBWriteThread> dbWriteThreads;
     private PageParser pageParser;
+    private Logger logger;
+
+    @Autowired
+    @Qualifier("logger")
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
     private class QueueControllerThread extends Thread{
         public void run(){
             int timeOfDoNothing = 0;
@@ -38,12 +47,12 @@ public class DBHandler {
             dbWriteThreads.add(DBThread);
             while(true) {
                 if (timeOfDoNothing >= 5 && !existActiveDBWriter()){
-                    System.out.println("connection pull closed");
+                    logger.info("connection pull closed");
                     connectionPool.close();
                     return;
                 }
                 if(queuePage.size() > 50 && connectionPool.getCurrentAvailableConnections() > 0) {
-                    System.out.println("Create new db thread. QueuePage size is " + queuePage.size());
+                    logger.info("Create new db thread. QueuePage size is " + queuePage.size());
                     timeOfDoNothing = 0;
                     DBThread = new DBWriteThread();
                     DBThread.start();
@@ -315,5 +324,9 @@ public class DBHandler {
             connectionPoolAdditional.putConnection(connection);
             e.printStackTrace();
         }
+    }
+
+    public void clearQueue(){
+        queuePage.clear();
     }
 }

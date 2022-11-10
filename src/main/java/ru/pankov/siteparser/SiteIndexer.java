@@ -1,8 +1,10 @@
 package ru.pankov.siteparser;
 
 import lombok.Data;
+import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.pankov.dbhandler.DBHandler;
@@ -22,6 +24,17 @@ public class SiteIndexer {
     private DBHandler dbHandler;
     private ObjectProvider<SiteIndexerTask> taskObjectProvider;
 
+    private Logger logger;
+
+    private ForkJoinPool forkJoinPool;
+    private int siteId;
+
+    @Autowired
+    @Qualifier("logger")
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
+
     public SiteIndexer(String siteMainPageUrl) {
         linksSet = Collections.synchronizedSet(new HashSet<>());
         linksSet.add(mainPageUrl);
@@ -39,11 +52,23 @@ public class SiteIndexer {
     }
 
     public void createIndex() {
-        System.out.println("Indexing start");
-        int siteId = dbHandler.addSite(mainPageUrl);
-        ForkJoinPool forkJoinPool = new ForkJoinPool();
+        logger.info("Indexing start" + mainPageUrl);
+        siteId = dbHandler.addSite(mainPageUrl);
+        forkJoinPool = new ForkJoinPool();
         forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteId));
         dbHandler.changeSiteStatus("INDEXED", siteId);
-        System.out.println("Indexing finish");
+        logger.info("Indexing finish " + mainPageUrl);
+    }
+
+    public void stopIndex(){
+        forkJoinPool.shutdownNow();
+        dbHandler.changeSiteStatus("FAILED", siteId);
+    }
+
+    public void indexPage(String url){
+        logger.info("Indexing page start" + url);
+        SiteIndexerTask task =  taskObjectProvider.getObject(url, linksSet, url, siteId);
+        task.indexPage();
+        logger.info("Indexing page finish" + url);
     }
 }

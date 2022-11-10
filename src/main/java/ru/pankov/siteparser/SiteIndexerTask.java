@@ -1,7 +1,9 @@
 package ru.pankov.siteparser;
 
+import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import ru.pankov.dbhandler.DBHandler;
@@ -22,6 +24,14 @@ public class SiteIndexerTask extends RecursiveAction {
     private PageParser pageParser;
     private ObjectProvider<SiteIndexerTask> taskObjectProvider;
     private int siteId;
+
+    private Logger logger;
+
+    @Autowired
+    @Qualifier("logger")
+    public void setLogger(Logger logger){
+        this.logger = logger;
+    }
 
     public SiteIndexerTask(String pageLink, Set<String> linksSet, String mainPageURL, int siteId) {
         this.pageLink = pageLink;
@@ -55,18 +65,15 @@ public class SiteIndexerTask extends RecursiveAction {
         linksSet.add(pageLink);
 
         if (mainPageURL.equals(pageLink)){
-            System.out.println("Start parsing");
+            logger.info("Start parsing");
         }
 
-        Page newPage = pageParser.parse(pageLink);
-        newPage.setSiteId(siteId);
+        Page newPage = indexPage();
+
         newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
         List<String> pageLinks = newPage.getLinks();
         List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(mainPageURL)).distinct().collect(Collectors.toList());
         linksSet.addAll(newPageLinks);
-
-
-        dbHandler.createPageIndex(newPage);
 
         List<SiteIndexerTask> taskList = new ArrayList<>();
         for (String link : newPageLinks) {
@@ -79,8 +86,17 @@ public class SiteIndexerTask extends RecursiveAction {
             task.join();
         }
         if (mainPageURL.equals(pageLink)){
-            System.out.println("End parsing");
+            logger.info("End parsing");
         }
 
+    }
+
+    public Page indexPage(){
+        Page newPage = pageParser.parse(pageLink);
+        newPage.setSiteId(siteId);
+
+        dbHandler.createPageIndex(newPage);
+
+        return newPage;
     }
 }
