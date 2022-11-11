@@ -70,7 +70,6 @@ public class SiteIndexerTask extends RecursiveAction {
 
         Page newPage = indexPage();
 
-        newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
         List<String> pageLinks = newPage.getLinks();
         List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(mainPageURL)).distinct().collect(Collectors.toList());
         linksSet.addAll(newPageLinks);
@@ -94,6 +93,7 @@ public class SiteIndexerTask extends RecursiveAction {
     public Page indexPage(){
         Page newPage = pageParser.parse(pageLink);
         newPage.setSiteId(siteId);
+        newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
 
         dbHandler.createPageIndex(newPage);
 

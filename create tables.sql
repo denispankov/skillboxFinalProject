@@ -10,7 +10,7 @@ content text NOT null,
 site_id integer not null
 );
 create unique index path_idx on page(path, site_id);
-grant select, insert on page to search_engine;
+grant select, insert, delete, update on page to search_engine;
 
 
 create table field(
@@ -33,7 +33,7 @@ site_id integer not null);
 
 create unique index lemma_idx on lemma(lemma);
 
-grant select, insert, update on lemma to search_engine;
+grant select, insert, delete, update on lemma to search_engine;
 
 create table index(
 id serial PRIMARY key,
@@ -42,7 +42,7 @@ lemma_id integer NOT NULL,
 rank numeric NOT NULL
 );
 
-grant select, insert on index to search_engine;
+grant select, insert, delete, update on index to search_engine;
 
 CREATE TYPE site_status AS ENUM ('INDEXING', 'INDEXED', 'FAILED');
 
@@ -57,6 +57,6 @@ name text NOT NULL
 
 create unique index site_url_idx on site(url);
 
-grant select, insert, update on site to search_engine;
+grant select, insert, delete, update on site to search_engine;
 GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA public TO search_engine;
 

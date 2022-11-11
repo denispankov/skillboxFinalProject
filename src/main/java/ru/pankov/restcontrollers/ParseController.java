@@ -1,20 +1,24 @@
 package ru.pankov.restcontrollers;
 
 import lombok.Data;
+import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import ru.pankov.dbhandler.DBHandler;
 import ru.pankov.siteparser.SiteIndexer;
 import ru.pankov.siteparser.SitesIndexer;
 
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.List;
+
+import java.util.Arrays;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 @RestController
@@ -22,10 +26,23 @@ public class ParseController {
     @Autowired
     SitesIndexer indexer;
 
+    DBHandler dbHandler;
+
+    @Autowired
+    public void setDbHandler(DBHandler dbHandler) {
+        this.dbHandler = dbHandler;
+    }
+
+    @Autowired
+    private ObjectProvider<SiteIndexer> siteIndexerObjectProvider;
+
+    @Value("${site-list}")
+    private String[] siteList;
+
     @GetMapping("/api/startIndexing")
-    public ResponseEntity<?> startIndexing(){
+    public ResponseEntity<?> startIndexing() {
         @Data
-        class Result{
+        class Result {
             private boolean result;
             private String error;
         }
@@ -33,10 +50,10 @@ public class ParseController {
 
         String error = indexer.indexAll();
 
-        if (error != ""){
+        if (error != "") {
             result.setResult(false);
             result.setError(error);
-        }else {
+        } else {
             result.setResult(true);
         }
 
@@ -44,23 +61,37 @@ public class ParseController {
     }
 
     @PostMapping("/api/indexPage")
-    public ResponseEntity<?> indexPage(@RequestParam Map<String, String> req){
+    public ResponseEntity<?> indexPage(@RequestParam Map<String, String> req) {
         @Data
-        class Result{
+        class Result {
             private boolean result;
             private String error;
         }
         Result result = new Result();
-
-        SiteIndexer indexer = new SiteIndexer(req.get("url"));
+        String site = "";
+        String url = req.get("url");
+        String regexp = "^((http)|(https))://[a-z]*.[a-z]{2}/";
+        Pattern pattern = Pattern.compile(regexp);
+        Matcher matcher = pattern.matcher(url);
+        while (matcher.find()) {
+            site = matcher.group(0);
+        }
+        if (Arrays.asList(siteList).contains(site)) {
+            SiteIndexer indexer = siteIndexerObjectProvider.getObject(site);
+            indexer.indexPage(url);
+            result.setResult(true);
+        } else {
+            result.setResult(false);
+            result.setError("Данная страница находится за пределами сайтов, указанных в конфигурационном файле");
+        }
 
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 
     @GetMapping("/api/stopIndexing")
-    public ResponseEntity<?> stopIndexing(){
+    public ResponseEntity<?> stopIndexing() {
         @Data
-        class Result{
+        class Result {
             private boolean result;
             private String error;
         }
@@ -68,10 +99,10 @@ public class ParseController {
 
         String error = indexer.stopAll();
 
-        if (error != ""){
+        if (error != "") {
             result.setResult(false);
             result.setError(error);
-        }else {
+        } else {
             result.setResult(true);
         }
 
@@ -79,77 +110,10 @@ public class ParseController {
     }
 
     @GetMapping("/api/statistics")
-    public ResponseEntity<?> getStatistic(){
-        @Data
-        class Result{
-            @Data
-            class Total{
-                private long sites;
-                private long pages;
-                private long lemmas;
-                private boolean isIndexing;
+    public ResponseEntity<?> getStatistic() {
 
-                public Total(long sites, long pages, long lemmas, boolean isIndexing) {
-                    this.sites = sites;
-                    this.pages = pages;
-                    this.lemmas = lemmas;
-                    this.isIndexing = isIndexing;
-                }
-            }
-            @Data
-            class SiteDet{
-                private String url;
-                private String name;
-                private String status;
-                private long statusTime;
-                private String error;
-                private int pages;
-                private long lemmas;
-
-                public SiteDet(String url, String name, String status, int statusTime, String error, int pages, long lemmas) {
-                    this.url = url;
-                    this.name = name;
-                    this.status = status;
-                    this.statusTime = statusTime;
-                    this.error = error;
-                    this.pages = pages;
-                    this.lemmas = lemmas;
-                }
-            }
-            @Data
-            class Statistic{
-                public Statistic(){
-                    total = null;
-                    detailed = new ArrayList<>();
-                }
-                public void addDetail(SiteDet det){
-                    detailed.add(det);
-                }
-
-                private Total total;
-                private List<SiteDet> detailed;
-            }
-            private boolean result;
-            private Statistic statistics;
-
-            public Result(){
-                statistics = new Statistic();
-            }
-
-            public void setTotal(long sites, long pages, long lemmas, boolean isIndexing){
-                statistics.setTotal(new Total(sites, pages, lemmas, isIndexing));
-            }
-
-            public void addDetail(String url, String name, String status, int statusTime, String error, int pages, long lemmas){
-                statistics.addDetail(new SiteDet(url, name, status, statusTime, error, pages, lemmas));
-            }
-        }
-        Result result = new Result();
+        ResultStatistic result = dbHandler.getStatistic();
         result.setResult(true);
-        /* Заглушка*/
-        result.setTotal(1,2,3,true);
-        result.addDetail("test1", "test1", "1",1,"",1,1);
-        result.addDetail("test2", "test2", "2",2,"",2,2);
         return ResponseEntity.status(HttpStatus.OK).body(result);
     }
 }

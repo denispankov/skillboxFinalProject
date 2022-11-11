@@ -56,7 +56,6 @@ public class SitesIndexer {
         boolean indexingIsRunning = false;
         String error = "";
         logger.info("All index start");
-
         for (SiteIndexThread th : indexProcess) {
             if (th.isAlive()) {
                 indexingIsRunning = true;
@@ -64,6 +63,7 @@ public class SitesIndexer {
         }
 
         if (indexingIsRunning == false) {
+            dbHandler.clearData();
             for (int i = 0; i < siteList.length; i++) {
                 SiteIndexThread th = new SiteIndexThread(siteList[i]);
                 th.start();
@@ -92,7 +92,7 @@ public class SitesIndexer {
             for (SiteIndexThread th : indexProcess) {
                 th.stopIndex();
             }
-            dbHandler.clearQueue();
+            dbHandler.stopIndexing();
             logger.info("All index stoped");
         } else {
             error = "Индексация не запущена";

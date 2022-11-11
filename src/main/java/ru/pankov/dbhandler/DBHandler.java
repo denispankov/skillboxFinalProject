@@ -10,7 +10,7 @@ import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.search.SearchResult;
 import ru.pankov.siteparser.Page;
 import ru.pankov.siteparser.PageParser;
-import ru.pankov.siteparser.SiteIndexerTask;
+import ru.pankov.restcontrollers.ResultStatistic;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
@@ -207,7 +207,7 @@ public class DBHandler {
     }
 
     public List<SearchResult> search(List<Lemma> lemmas){
-        Connection connection = connectionPoolAdditional.getConnection();;
+        Connection connection = connectionPoolAdditional.getConnection();
         StringBuilder lemmasIntoSQL = new StringBuilder();
         List<SearchResult> searchResults = new ArrayList<>();
         for(Lemma lemma: lemmas){
@@ -326,7 +326,97 @@ public class DBHandler {
         }
     }
 
-    public void clearQueue(){
+    public void clearData(){
+        String sql = "delete from page;\n" +
+                    "delete from lemma; \n" +
+                    "delete from \"index\";\n" +
+                    "delete from site;\n";
+        Connection connection = connectionPoolAdditional.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sql);
+            connection.commit();
+            connectionPoolAdditional.putConnection(connection);
+        }catch (Exception e){
+            connectionPoolAdditional.putConnection(connection);
+            e.printStackTrace();
+        }
+    }
+
+    public ResultStatistic getStatistic(){
+        Connection connection = connectionPoolAdditional.getConnection();
+        ResultStatistic resultStatistic = new ResultStatistic();
+        String searchSql = "  select (select count(1)\n" +
+                " \t       from site s) sites\n" +
+                " \t   ,(select count(1)\n" +
+                "  \t\t   from page) pages\n" +
+                "  \t   ,(select count(1)\n" +
+                "           from lemma) lemmas\n" +
+                "       ,(select case when status = 'INDEXING' then 1 else 0 end\n" +
+                "           from site\n" +
+                "           order by 1 desc\n" +
+                "           limit 1) status ";
+        try {
+
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(searchSql);
+            while (rs.next()){
+                resultStatistic.setTotal(rs.getInt("sites")
+                                        ,rs.getInt("pages")
+                                        ,rs.getInt("lemmas")
+                                        ,rs.getInt("status") == 1? true : false);
+            };
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        searchSql = " select s.url \n" +
+                "\t  ,s.\"name\" \n" +
+                "\t  ,s.status \n" +
+                "\t  ,s.status_time\n" +
+                "\t  ,s.last_error \n" +
+                "\t  ,(select count(1)\n" +
+                "\t      from page p\n" +
+                "\t     where s.id = p.site_id ) pages\n" +
+                "\t  ,(select count(1)\n" +
+                "\t      from lemma l\n" +
+                "\t     where l.site_id  = s.id ) lemmas\n" +
+                " from site s";
+        try {
+
+            Statement statement = connection.createStatement();
+            ResultSet rs = statement.executeQuery(searchSql);
+            while (rs.next()){
+                resultStatistic.addDetail(rs.getString("url")
+                                         ,rs.getString("name")
+                                         ,rs.getString("status")
+                                         ,rs.getString("status_time")
+                                         ,rs.getString("last_error")
+                                         ,rs.getInt("pages")
+                                         ,rs.getInt("lemmas"));
+            };
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+
+        connectionPoolAdditional.putConnection(connection);
+        return resultStatistic;
+    }
+
+
+    public void stopIndexing(){
+        String sql = "update site" +
+                "   set status = 'FAILED' ";
+        Connection connection = connectionPoolAdditional.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sql);
+            connection.commit();
+            connectionPoolAdditional.putConnection(connection);
+        }catch (Exception e){
+            connectionPoolAdditional.putConnection(connection);
+            e.printStackTrace();
+        }
         queuePage.clear();
     }
 }

@@ -62,13 +62,13 @@ public class SiteIndexer {
 
     public void stopIndex(){
         forkJoinPool.shutdownNow();
-        dbHandler.changeSiteStatus("FAILED", siteId);
     }
 
     public void indexPage(String url){
-        logger.info("Indexing page start" + url);
-        SiteIndexerTask task =  taskObjectProvider.getObject(url, linksSet, url, siteId);
+        logger.info("Indexing page start " + url);
+        siteId = dbHandler.addSite(mainPageUrl);
+        SiteIndexerTask task =  taskObjectProvider.getObject(url, linksSet, mainPageUrl, siteId);
         task.indexPage();
-        logger.info("Indexing page finish" + url);
+        logger.info("Indexing page finish " + url);
     }
 }
