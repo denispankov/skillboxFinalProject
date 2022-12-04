@@ -346,7 +346,7 @@ public class DBHandler {
     public ResultStatistic getStatistic(){
         Connection connection = connectionPoolAdditional.getConnection();
         ResultStatistic resultStatistic = new ResultStatistic();
-        String searchSql = "  select (select count(1)\n" +
+        String sql = "  select (select count(1)\n" +
                 " \t       from site s) sites\n" +
                 " \t   ,(select count(1)\n" +
                 "  \t\t   from page) pages\n" +
@@ -359,7 +359,7 @@ public class DBHandler {
         try {
 
             Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(searchSql);
+            ResultSet rs = statement.executeQuery(sql);
             while (rs.next()){
                 resultStatistic.setTotal(rs.getInt("sites")
                                         ,rs.getInt("pages")
@@ -370,7 +370,7 @@ public class DBHandler {
             e.printStackTrace();
         }
 
-        searchSql = " select s.url \n" +
+        sql = " select s.url \n" +
                 "\t  ,s.\"name\" \n" +
                 "\t  ,s.status \n" +
                 "\t  ,s.status_time\n" +
@@ -385,7 +385,7 @@ public class DBHandler {
         try {
 
             Statement statement = connection.createStatement();
-            ResultSet rs = statement.executeQuery(searchSql);
+            ResultSet rs = statement.executeQuery(sql);
             while (rs.next()){
                 resultStatistic.addDetail(rs.getString("url")
                                          ,rs.getString("name")
