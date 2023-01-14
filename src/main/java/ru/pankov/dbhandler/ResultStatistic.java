@@ -1,4 +1,4 @@
-package ru.pankov.restcontrollers;
+package ru.pankov.dbhandler;
 
 import lombok.Data;
 
@@ -67,5 +67,9 @@ public class ResultStatistic{
 
     public void addDetail(String url, String name, String status, String statusTime, String error, int pages, long lemmas){
         statistics.addDetail(new SiteDet(url, name, status, statusTime, error, pages, lemmas));
+    }
+
+    public boolean getIsIndexing(){
+        return statistics.total.isIndexing;
     }
 }

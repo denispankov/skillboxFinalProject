@@ -12,6 +12,7 @@ import ru.pankov.dbhandler.DBHandler;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
 @Data
@@ -55,8 +56,17 @@ public class SiteIndexer {
         logger.info("Indexing start" + mainPageUrl);
         siteId = dbHandler.addSite(mainPageUrl);
         forkJoinPool = new ForkJoinPool();
-        forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteId));
-        dbHandler.changeSiteStatus("INDEXED", siteId);
+        try {
+            forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteId));
+            dbHandler.changeSiteStatus("INDEXED", siteId, "");
+        }catch (CancellationException ce){
+            dbHandler.changeSiteStatus("FAILED", siteId, "manual stop");
+        }
+        catch (Exception e){
+            e.printStackTrace();
+            logger.info(e.getMessage() + mainPageUrl);
+            dbHandler.changeSiteStatus("FAILED", siteId, e.getMessage());
+        }
         logger.info("Indexing finish " + mainPageUrl);
     }
 

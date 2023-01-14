@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import ru.pankov.dbhandler.DBHandler;
+import ru.pankov.dbhandler.ResultStatistic;
 import ru.pankov.siteparser.SiteIndexer;
 import ru.pankov.siteparser.SitesIndexer;
 

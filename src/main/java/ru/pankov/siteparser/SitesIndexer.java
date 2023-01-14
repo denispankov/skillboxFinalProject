@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.pankov.dbhandler.DBHandler;
+import ru.pankov.dbhandler.ResultStatistic;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,10 +57,10 @@ public class SitesIndexer {
         boolean indexingIsRunning = false;
         String error = "";
         logger.info("All index start");
-        for (SiteIndexThread th : indexProcess) {
-            if (th.isAlive()) {
-                indexingIsRunning = true;
-            }
+
+        ResultStatistic rs = dbHandler.getStatistic();
+        if (rs.getIsIndexing()){
+            indexingIsRunning = true;
         }
 
         if (indexingIsRunning == false) {
@@ -81,10 +82,9 @@ public class SitesIndexer {
         boolean indexingIsRunning = false;
         String error = "";
 
-        for (SiteIndexThread th : indexProcess) {
-            if (th.isAlive()) {
-                indexingIsRunning = true;
-            }
+        ResultStatistic rs = dbHandler.getStatistic();
+        if (rs.getIsIndexing()){
+            indexingIsRunning = true;
         }
 
         if (indexingIsRunning == true) {
@@ -92,7 +92,7 @@ public class SitesIndexer {
             for (SiteIndexThread th : indexProcess) {
                 th.stopIndex();
             }
-            dbHandler.stopIndexing();
+            dbHandler.clearIndexingQueue();
             logger.info("All index stoped");
         } else {
             error = "Индексация не запущена";

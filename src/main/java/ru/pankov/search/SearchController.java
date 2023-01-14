@@ -21,7 +21,7 @@ public class SearchController {
             @lombok.Data
             class Data{
                 private String site;
-                private String sateName;
+                private String siteName;
                 private String uri;
                 private String title;
                 private String snippet;
@@ -29,7 +29,7 @@ public class SearchController {
 
                 public Data(String site, String sateName, String uri, String title, String snippet, float relevance) {
                     this.site = site;
-                    this.sateName = sateName;
+                    this.siteName = sateName;
                     this.uri = uri;
                     this.title = title;
                     this.snippet = snippet;

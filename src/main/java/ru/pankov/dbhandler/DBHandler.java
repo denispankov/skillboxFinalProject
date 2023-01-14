@@ -10,7 +10,6 @@ import ru.pankov.lemmanization.Lemmatizer;
 import ru.pankov.search.SearchResult;
 import ru.pankov.siteparser.Page;
 import ru.pankov.siteparser.PageParser;
-import ru.pankov.restcontrollers.ResultStatistic;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
@@ -23,7 +22,7 @@ import java.util.stream.Stream;
 
 @Component
 public class DBHandler {
-    private volatile BlockingQueue<Page> queuePage = new ArrayBlockingQueue<>(10000);
+    private volatile BlockingQueue<Page> queuePage = new ArrayBlockingQueue<>(100000);
     private ObjectProvider<ConnectionPool> connectionPoolObjectProvider;
     private QueueControllerThread queueThread;
     private Lemmatizer lemmatizer;
@@ -310,9 +309,10 @@ public class DBHandler {
         return 0;
     }
 
-    public void changeSiteStatus(String status, int siteId){
+    public void changeSiteStatus(String status, int siteId, String error){
         String sql = "update site" +
                 "   set status = '" + status + "' " +
+                ", last_error = '" + error + "'"+
                 " where id  = "+ siteId +";";
         Connection connection = connectionPoolAdditional.getConnection();
         try {
@@ -404,19 +404,7 @@ public class DBHandler {
     }
 
 
-    public void stopIndexing(){
-        String sql = "update site" +
-                "   set status = 'FAILED' ";
-        Connection connection = connectionPoolAdditional.getConnection();
-        try {
-            Statement statement = connection.createStatement();
-            statement.execute(sql);
-            connection.commit();
-            connectionPoolAdditional.putConnection(connection);
-        }catch (Exception e){
-            connectionPoolAdditional.putConnection(connection);
-            e.printStackTrace();
-        }
+    public void clearIndexingQueue(){
         queuePage.clear();
     }
 }

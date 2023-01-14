@@ -46,9 +46,5 @@ public class CommandLineRunnerMain implements CommandLineRunner {
             new SiteIndexThread(siteList[i]).start();
         }
         logger.info("All index finished");
-        /* TODO
-        Перед переходом на веб
-        добавить юнит тесты
-         */
     }
 }
