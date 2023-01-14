@@ -404,7 +404,22 @@ public class DBHandler {
     }
 
 
-    public void clearIndexingQueue(){
+    public void stopIndexing(){
+        String sql = "update site" +
+                "   set status = 'FAILED' " +
+                "   ,last_error = 'manual stop'" +
+                " where status = 'INDEXING'";
+
+        Connection connection = connectionPoolAdditional.getConnection();
+        try {
+            Statement statement = connection.createStatement();
+            statement.execute(sql);
+            connection.commit();
+            connectionPoolAdditional.putConnection(connection);
+        }catch (Exception e){
+            connectionPoolAdditional.putConnection(connection);
+            e.printStackTrace();
+        }
         queuePage.clear();
     }
 }
