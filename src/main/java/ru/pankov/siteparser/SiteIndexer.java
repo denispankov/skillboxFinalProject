@@ -60,6 +60,7 @@ public class SiteIndexer {
             forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteId));
             dbHandler.changeSiteStatus("INDEXED", siteId, "");
         }catch (CancellationException ce){
+            dbHandler.changeSiteStatus("FAILED", siteId, "manual stop");
         }
         catch (Exception e){
             e.printStackTrace();

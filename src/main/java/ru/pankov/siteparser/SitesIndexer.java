@@ -92,7 +92,7 @@ public class SitesIndexer {
             for (SiteIndexThread th : indexProcess) {
                 th.stopIndex();
             }
-            dbHandler.stopIndexing();
+            dbHandler.clearIndexingQueue();
             logger.info("All index stoped");
         } else {
             error = "Индексация не запущена";
