@@ -239,7 +239,7 @@ public class DBHandler {
                 "    ,i.page_id " +
                 "   from tempor t" +
                 "   join \"index\" i on i.lemma_id = t.id" +
-                "  where t.percent <= 0.055" +
+                "  where t.percent <= 0.065" +
                 "  group by i.page_id)," +
                 "  resul as (select r.agg" +
                 "  ,r.cnt" +
