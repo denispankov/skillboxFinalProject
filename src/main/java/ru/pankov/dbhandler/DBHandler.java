@@ -205,7 +205,7 @@ public class DBHandler {
         }
     }
 
-    public List<SearchResult> search(List<Lemma> lemmas){
+    public List<SearchResult> search(List<Lemma> lemmas, String site, int limit, int offset){
         Connection connection = connectionPoolAdditional.getConnection();
         StringBuilder lemmasIntoSQL = new StringBuilder();
         List<SearchResult> searchResults = new ArrayList<>();
@@ -215,14 +215,17 @@ public class DBHandler {
         lemmasIntoSQL.delete(lemmasIntoSQL.length() - 2 , lemmasIntoSQL.length() - 1);
         String searchSql = "with quantity_lemmas as (" +
                 " select count(1) cnt" +
-                "  from lemma" +
+                "  from lemma l" +
+                " where l.site_id in (select s.id from site s where s.name = '"+site+"' or '"+site+"' = 'null')" +
                 ")," +
                 "lemmas as (" +
                 "select l.lemma " +
                 "  ,l.frequency " +
                 "  ,l.id " +
                 "  from lemma l" +
+                "  join site s on s.id  = l.site_id " +
                 " where l.lemma in ("+ lemmasIntoSQL +")" +
+                "   and (s.\"name\"  =  '"+site+"' or 'null' = '"+site+"')" +
                 ")," +
                 "tempor as (select l.lemma " +
                 "  ,l.frequency " +
@@ -237,20 +240,23 @@ public class DBHandler {
                 "   from tempor t" +
                 "   join \"index\" i on i.lemma_id = t.id" +
                 "  where t.percent <= 0.055" +
-                "  group by i.page_id )," +
+                "  group by i.page_id)," +
                 "  resul as (select r.agg" +
                 "  ,r.cnt" +
                 "  ,r.cnt_all" +
                 "  ,r.rel / (select max(r.rel) from res r) rel_rel" +
                 "  ,r.page_id" +
+                "  , count(1) over(partition by 1)  quant_page" +
                 "    from res r" +
                 "   order by cnt desc,5 desc)" +
                 "   select l.*" +
                 "   ,p.\"content\"" +
-                "   ,p.\"path\" " +
+                "   ,p.\"path\" as path" +
+                "   , s.\"name\" as site_name , s.url   " +
                 "     from resul l" +
                 "     join page p on p.id  = l.page_id" +
-                "    limit 10";
+                "     join site s on s.id  = p.site_id " +
+                "    limit "+ limit +" offset " + offset;
         try {
 
             Statement statement = connection.createStatement();
@@ -259,7 +265,12 @@ public class DBHandler {
                 searchResults.add(new SearchResult(rs.getString("path"),
                                                     pageParser.getHTMLTitle(rs.getString("content" )),
                                                     pageParser.getHTMLSnippet(rs.getString("content" ), lemmas),
-                                                    rs.getDouble("rel_rel")));
+                                                    rs.getDouble("rel_rel"),
+                                                    rs.getInt("quant_page"),
+                                                    rs.getString("site_name" ),
+                                                    rs.getString("url" )
+                                                    )
+                                                    );
             };
         }catch (Exception e){
             e.printStackTrace();

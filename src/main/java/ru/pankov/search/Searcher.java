@@ -23,9 +23,9 @@ public class Searcher {
         this.dbHandler = dbHandler;
     }
 
-    public List<SearchResult> search(String request){
+    public List<SearchResult> search(String request, String site, int limit, int offset){
         List<Lemma> requestLemmas = lemmatizer.getLemmas(request);
-        List<SearchResult> searchResults = dbHandler.search(requestLemmas);
+        List<SearchResult> searchResults = dbHandler.search(requestLemmas, site, limit, offset);
         return searchResults;
     }
 }
