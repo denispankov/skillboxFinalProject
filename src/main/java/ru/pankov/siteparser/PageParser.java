@@ -55,6 +55,8 @@ public class PageParser {
         StringBuilder snippet = new StringBuilder();
         int offset = 35;
 
+        String[] words = HTMLText.split(" ");
+
         Map<String, String> wordLemmaMap = Stream.of(HTMLText.split(" ")).collect(Collectors.toMap(
                 s -> {
                     List<Lemma> lems = lemmatizer.getLemmas(s);
@@ -65,17 +67,19 @@ public class PageParser {
                     return s;
 
                 }
-                ,s -> s
+                , s -> s
                 , (v1, v2) -> v1));
 
         for (Lemma lemma : lemmas) {
             String word = wordLemmaMap.get(lemma.getLemma());
-            int lemmaIndex = HTMLText.indexOf(word);
-            if (lemmaIndex != -1) {
-                int startIndex = lemmaIndex - offset > 0 ? lemmaIndex - offset : lemmaIndex;
-                int finishIndex = lemmaIndex + offset < HTMLText.length() - 1 ? lemmaIndex + offset : lemmaIndex;
+            if (word != null) {
+                int lemmaIndex = HTMLText.indexOf(word);
+                if (lemmaIndex != -1) {
+                    int startIndex = lemmaIndex - offset > 0 ? lemmaIndex - offset : lemmaIndex;
+                    int finishIndex = lemmaIndex + offset < HTMLText.length() - 1 ? lemmaIndex + offset : lemmaIndex;
 
-                snippet.append(("..." + HTMLText.substring(startIndex, finishIndex) + "...").replace(word, "<b>" + word + "</b>"));
+                    snippet.append(("..." + HTMLText.substring(startIndex, finishIndex) + "...").replace(word, "<b>" + word + "</b>"));
+                }
             }
         }
 

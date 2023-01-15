@@ -83,6 +83,7 @@ public class SitesIndexer {
         String error = "";
 
         ResultStatistic rs = dbHandler.getStatistic();
+
         if (rs.getIsIndexing()){
             indexingIsRunning = true;
         }
@@ -92,6 +93,7 @@ public class SitesIndexer {
             for (SiteIndexThread th : indexProcess) {
                 th.stopIndex();
             }
+            dbHandler.stopFailedIndexing();
             dbHandler.clearIndexingQueue();
             logger.info("All index stoped");
         } else {

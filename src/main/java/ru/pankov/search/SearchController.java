@@ -77,7 +77,11 @@ public class SearchController {
             result.fromSearchResult(res);
         }
 
-        result.count = searchResults.get(0).getQuantPages();
+        if (searchResults.size() > 0) {
+            result.count = searchResults.get(0).getQuantPages();
+        }else{
+            result.count = 0;
+        }
 
         if (query == ""){
             result.setError("Задан пустой поисковый запрос");
