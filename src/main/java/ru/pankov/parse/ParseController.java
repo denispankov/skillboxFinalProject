@@ -1,4 +1,4 @@
-package ru.pankov.restcontrollers;
+package ru.pankov.parse;
 
 import lombok.Data;
 import org.springframework.beans.factory.ObjectProvider;
@@ -71,7 +71,7 @@ public class ParseController {
         Result result = new Result();
         String site = "";
         String url = req.get("url");
-        String regexp = "^((http)|(https))://[a-z]*.[a-z]{2}/";
+        String regexp = "^((http)|(https))://[a-z]*.[a-z]*.[a-z]{2}/";
         Pattern pattern = Pattern.compile(regexp);
         Matcher matcher = pattern.matcher(url);
         while (matcher.find()) {
