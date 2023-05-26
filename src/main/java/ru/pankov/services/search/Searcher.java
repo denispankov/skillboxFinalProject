@@ -1,14 +1,16 @@
-package ru.pankov.search;
+package ru.pankov.services.search;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.pankov.dbhandler.DBHandler;
-import ru.pankov.lemmanization.Lemma;
-import ru.pankov.lemmanization.Lemmatizer;
+import ru.pankov.pojo.lemmanization.Lemma;
+import ru.pankov.pojo.search.SearchResult;
+import ru.pankov.services.lemmanization.Lemmatizer;
 
 import java.util.List;
 
-@Component
+@Service
 public class Searcher {
     Lemmatizer lemmatizer;
     DBHandler dbHandler;

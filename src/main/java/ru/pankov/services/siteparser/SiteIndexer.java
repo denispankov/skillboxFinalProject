@@ -1,4 +1,4 @@
-package ru.pankov.siteparser;
+package ru.pankov.services.siteparser;
 
 import lombok.Data;
 import org.slf4j.Logger;
@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.pankov.dbhandler.DBHandler;
 
 import java.util.Collections;
@@ -16,7 +17,7 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
 @Data
-@Component
+@Service
 @Scope("prototype")
 public class SiteIndexer {
     private volatile Set<String> linksSet;

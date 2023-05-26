@@ -1,4 +1,4 @@
-package ru.pankov.siteparser;
+package ru.pankov.pojo.siteparser;
 
 import lombok.Data;
 

@@ -1,19 +1,19 @@
-package ru.pankov.lemmanization;
+package ru.pankov.services.lemmanization;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
+import ru.pankov.pojo.lemmanization.Lemma;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Function;
 import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
-@Component
+@Service
 public class Lemmatizer {
     private LuceneMorphology luceneMorphology;
 

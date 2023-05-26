@@ -6,8 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
-import ru.pankov.search.Searcher;
-import ru.pankov.siteparser.SiteIndexer;
+import ru.pankov.services.search.Searcher;
+import ru.pankov.services.siteparser.SiteIndexer;
 
 
 public class CommandLineRunnerMain implements CommandLineRunner {

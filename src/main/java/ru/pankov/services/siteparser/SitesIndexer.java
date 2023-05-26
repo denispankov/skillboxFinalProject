@@ -1,4 +1,4 @@
-package ru.pankov.siteparser;
+package ru.pankov.services.siteparser;
 
 import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
@@ -6,13 +6,15 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import ru.pankov.dbhandler.DBHandler;
 import ru.pankov.dbhandler.ResultStatistic;
+import ru.pankov.services.siteparser.SiteIndexer;
 
 import java.util.ArrayList;
 import java.util.List;
 
-@Component
+@Service
 public class SitesIndexer {
     private Logger logger;
     @Autowired

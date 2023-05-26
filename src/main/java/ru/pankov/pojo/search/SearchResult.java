@@ -1,4 +1,4 @@
-package ru.pankov.search;
+package ru.pankov.pojo.search;
 
 import lombok.Data;
 

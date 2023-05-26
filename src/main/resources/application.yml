@@ -7,6 +7,16 @@ spring:
     connection-pool-size: 5
   main:
     banner-mode: off
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
+      dialect: org.hibernate.dialect.PostgreSQLDialect
+    hibernate:
+      ddl-auto: update
+    show-sql: true
 
 site-list: http://www.playback.ru/
           ,https://volochek.life/
@@ -21,3 +31,9 @@ site-list: http://www.playback.ru/
 
 web-interface: /admin
 user-agent: XSearchBot
+
+logging:
+  level:
+    org:
+      hibernate:
+        SQL: trace

@@ -1,4 +1,4 @@
-package ru.pankov.lemmanization;
+package ru.pankov.pojo.lemmanization;
 
 import lombok.Data;
 

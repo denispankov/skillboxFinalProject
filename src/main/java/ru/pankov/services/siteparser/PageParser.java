@@ -1,4 +1,4 @@
-package ru.pankov.siteparser;
+package ru.pankov.services.siteparser;
 
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
@@ -6,8 +6,10 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
-import ru.pankov.lemmanization.Lemma;
-import ru.pankov.lemmanization.Lemmatizer;
+import org.springframework.stereotype.Service;
+import ru.pankov.pojo.lemmanization.Lemma;
+import ru.pankov.pojo.siteparser.Page;
+import ru.pankov.services.lemmanization.Lemmatizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Component
+@Service
 public class PageParser {
     private Lemmatizer lemmatizer;
 

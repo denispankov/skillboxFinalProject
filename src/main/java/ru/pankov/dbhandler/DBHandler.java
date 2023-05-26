@@ -5,11 +5,11 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Component;
-import ru.pankov.lemmanization.Lemma;
-import ru.pankov.lemmanization.Lemmatizer;
-import ru.pankov.search.SearchResult;
-import ru.pankov.siteparser.Page;
-import ru.pankov.siteparser.PageParser;
+import ru.pankov.pojo.lemmanization.Lemma;
+import ru.pankov.services.lemmanization.Lemmatizer;
+import ru.pankov.pojo.search.SearchResult;
+import ru.pankov.pojo.siteparser.Page;
+import ru.pankov.services.siteparser.PageParser;
 
 import javax.annotation.PostConstruct;
 import java.sql.*;
