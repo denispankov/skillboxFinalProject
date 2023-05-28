@@ -4,21 +4,21 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 @Entity
-@Table(schema = "public",name = "things")
+@Table(schema = "public",name = "page")
 @Data
 public class PageEntity {
     @Id
     @GeneratedValue
     @Column(name = "id", nullable = false)
     private Long id;
-    @Column(name = "path", nullable = false)
+    @Column(name = "path", nullable = false, columnDefinition="text")
     private String path;
     @Column(name = "code", nullable = false)
     private int code;
-    @Column(name = "text", nullable = false)
-    private String text;
+    @Column(name = "content", columnDefinition="text")
+    private String content;
 
-    @ManyToOne (optional=false, cascade=CascadeType.ALL)
+    @ManyToOne (optional=false, cascade = {CascadeType.MERGE})
     @JoinColumn (name="site_id")
     private SiteEntity siteEntity;
 }

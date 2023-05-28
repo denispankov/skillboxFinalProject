@@ -13,14 +13,20 @@ public class IndexEntity {
     @Column(name = "id", nullable = false)
     Long id;
 
-    @ManyToOne (optional=false, cascade=CascadeType.ALL)
+    @ManyToOne (optional=false, cascade = {CascadeType.MERGE})
     @JoinColumn (name="page_id")
     private PageEntity pageEntity;
 
-    @ManyToOne (optional=false, cascade=CascadeType.ALL)
+    @ManyToOne (optional=false, cascade = {CascadeType.MERGE})
     @JoinColumn (name="lemma_id")
     private LemmaEntity lemmaEntity;
 
     @Column(name = "rank", nullable = false)
-    float rank;
+    double rank;
+
+    public IndexEntity(PageEntity pageEntity, LemmaEntity lemmaEntity, double rank) {
+        this.pageEntity = pageEntity;
+        this.lemmaEntity = lemmaEntity;
+        this.rank = rank;
+    }
 }

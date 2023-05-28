@@ -37,3 +37,7 @@ logging:
     org:
       hibernate:
         SQL: trace
+      type:
+        descriptor:
+          sql:
+            BasicBinder: TRACE

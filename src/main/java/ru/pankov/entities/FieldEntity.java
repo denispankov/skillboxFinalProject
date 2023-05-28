@@ -11,9 +11,9 @@ public class FieldEntity {
     @GeneratedValue
     @Column(name = "id", nullable = false)
     Long id;
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, columnDefinition="text")
     String name;
-    @Column(name = "selector", nullable = false)
+    @Column(name = "selector", nullable = false, columnDefinition="text")
     String selector;
     @Column(name = "weight", nullable = false)
     float weight;

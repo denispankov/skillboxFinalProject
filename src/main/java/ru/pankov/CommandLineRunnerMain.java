@@ -7,12 +7,12 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import ru.pankov.services.search.Searcher;
-import ru.pankov.services.siteparser.SiteIndexer;
+import ru.pankov.services.siteparser.SiteIndexerService;
 
 
 public class CommandLineRunnerMain implements CommandLineRunner {
     @Autowired
-    private ObjectProvider<SiteIndexer> siteIndexerObjectProvider;
+    private ObjectProvider<SiteIndexerService> siteIndexerObjectProvider;
     @Value("${site-list}")
     private String[] siteList;
     @Autowired
@@ -32,7 +32,7 @@ public class CommandLineRunnerMain implements CommandLineRunner {
             this.siteUrl = siteUrl;
         }
         public void run(){
-            SiteIndexer site = siteIndexerObjectProvider.getObject(siteUrl);
+            SiteIndexerService site = siteIndexerObjectProvider.getObject(siteUrl);
             site.createIndex();
         }
     }

@@ -5,7 +5,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.pankov.pojo.lemmanization.Lemma;
 import ru.pankov.pojo.siteparser.Page;
@@ -18,7 +17,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 @Service
-public class PageParser {
+public class PageParserService {
     private Lemmatizer lemmatizer;
 
     @Autowired

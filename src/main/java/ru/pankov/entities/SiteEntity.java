@@ -14,13 +14,13 @@ public class SiteEntity {
     @Column(name = "id", nullable = false)
     Long id;
     @Column(name = "site_status", nullable = false)
-    int site_status;
+    int siteStatus;
     @Column(name = "status_time", nullable = false)
-    LocalDateTime status_time;
-    @Column(name = "last_error")
-    String last_error;
-    @Column(name = "url", nullable = false)
+    LocalDateTime statusTime;
+    @Column(name = "last_error", columnDefinition="text")
+    String lastError;
+    @Column(name = "url", nullable = false, columnDefinition="text")
     String url;
-    @Column(name = "name", nullable = false)
+    @Column(name = "name", nullable = false, columnDefinition="text")
     String name;
 }

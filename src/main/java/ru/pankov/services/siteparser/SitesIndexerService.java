@@ -5,30 +5,35 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import ru.pankov.dbhandler.DBHandler;
-import ru.pankov.dbhandler.ResultStatistic;
-import ru.pankov.services.siteparser.SiteIndexer;
+import ru.pankov.entities.SiteEntity;
+import ru.pankov.pojo.statistic.ResultStatistic;
+import ru.pankov.repositories.IndexRepository;
+import ru.pankov.repositories.LemmaRepository;
+import ru.pankov.repositories.PageRepository;
+import ru.pankov.repositories.SiteRepository;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
-public class SitesIndexer {
+public class SitesIndexerService {
     private Logger logger;
     @Autowired
-    private ObjectProvider<SiteIndexer> siteIndexerObjectProvider;
+    private ObjectProvider<SiteIndexerService> siteIndexerObjectProvider;
     @Value("${site-list}")
     private String[] siteList;
     private List<SiteIndexThread> indexProcess = new ArrayList<>();
 
-    DBHandler dbHandler;
-
     @Autowired
-    public void setDbHandler(DBHandler dbHandler) {
-        this.dbHandler = dbHandler;
-    }
+    private PageRepository pageRepository;
+    @Autowired
+    private LemmaRepository lemmaRepository;
+    @Autowired
+    private IndexRepository indexRepository;
+    @Autowired
+    private SiteRepository siteRepository;
+
 
     @Autowired
     @Qualifier("logger")
@@ -38,7 +43,7 @@ public class SitesIndexer {
 
     private class SiteIndexThread extends Thread {
         private String siteUrl;
-        private SiteIndexer site;
+        private SiteIndexerService site;
 
         public SiteIndexThread(String siteUrl) {
             super();
@@ -60,13 +65,19 @@ public class SitesIndexer {
         String error = "";
         logger.info("All index start");
 
-        ResultStatistic rs = dbHandler.getStatistic();
-        if (rs.getIsIndexing()){
+        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(1);
+
+        if (!siteEntities.isEmpty()){
             indexingIsRunning = true;
         }
 
         if (indexingIsRunning == false) {
-            dbHandler.clearData();
+
+            pageRepository.deleteAll();
+            lemmaRepository.deleteAll();
+            indexRepository.deleteAll();
+            siteRepository.deleteAll();
+
             for (int i = 0; i < siteList.length; i++) {
                 SiteIndexThread th = new SiteIndexThread(siteList[i]);
                 th.start();
@@ -84,9 +95,12 @@ public class SitesIndexer {
         boolean indexingIsRunning = false;
         String error = "";
 
-        ResultStatistic rs = dbHandler.getStatistic();
+        /*toDO
+        переделать на энум, может не работать этот кусок кода, не понятно что возвращается, когда не найдены строки
+         */
+        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(1);
 
-        if (rs.getIsIndexing()){
+        if (!siteEntities.isEmpty()){
             indexingIsRunning = true;
         }
 
@@ -95,14 +109,22 @@ public class SitesIndexer {
             for (SiteIndexThread th : indexProcess) {
                 th.stopIndex();
             }
-            dbHandler.stopFailedIndexing();
-            dbHandler.clearIndexingQueue();
+            siteEntities = siteRepository.findBySiteStatus(1);
+            for (SiteEntity siteEntity: siteEntities){
+                siteEntity.setSiteStatus(3);
+                siteRepository.save(siteEntity);
+            }
+
             logger.info("All index stoped");
         } else {
             error = "Индексация не запущена";
         }
 
         return error;
+    }
+
+    public ResultStatistic getStatistic(){
+        return new ResultStatistic(siteRepository.getStatisticTotal(), siteRepository.getStatisticDetail());
     }
 
 
