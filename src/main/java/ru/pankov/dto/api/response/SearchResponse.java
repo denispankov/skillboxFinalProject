@@ -1,7 +1,7 @@
-package ru.pankov.pojo.api.response;
+package ru.pankov.dto.api.response;
 
 import lombok.Data;
-import ru.pankov.pojo.search.SearchResult;
+import ru.pankov.dto.search.SearchResult;
 
 import java.util.ArrayList;
 import java.util.List;

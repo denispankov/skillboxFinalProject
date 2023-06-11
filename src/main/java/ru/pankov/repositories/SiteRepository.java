@@ -4,11 +4,11 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
-import ru.pankov.pojo.statistic.ResultStatistic;
+import ru.pankov.dto.search.SearchResultInterface;
 import ru.pankov.entities.SiteEntity;
-import ru.pankov.pojo.search.SearchResult;
-import ru.pankov.pojo.statistic.SitesDetailStatistic;
-import ru.pankov.pojo.statistic.TotalStatistic;
+import ru.pankov.dto.search.SearchResult;
+import ru.pankov.dto.statistic.SitesDetailStatistic;
+import ru.pankov.dto.statistic.TotalStatistic;
 
 import java.util.List;
 
@@ -19,15 +19,15 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                                        from lemma l
                                       where l.site_id in (select s.id from 
                                                             site s 
-                                                           where s.name = :site or :site = 'null')
+                                                           where s.name = :site or :site = '')
             ),
             lemmas as (select l.lemma 
                               ,l.frequency 
                               ,l.id 
                          from lemma l
                          join site s on s.id  = l.site_id 
-                        where l.lemma in :lemmasList
-                          and (s.\"name\"  =  :site or 'null' = :site)
+                        where l.lemma in (:lemmasList)
+                          and (s.\"name\"  =  :site or '' = :site)
             ),
             tempor as (select l.lemma 
                               ,l.frequency 
@@ -51,21 +51,23 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                               ,count(1) over(partition by 1)  quant_page
                          from res r
                      order by cnt desc,5 desc)
-             select l.*
-                    ,p.\"content\"
-                    ,p.\"path\" as path
-                     s.\"name\" as site_name , s.url 
+             select  p.path as uri
+                    ,p.content as content
+                    ,l.rel_rel as relevance
+                    ,l.quant_page as quantPages
+                    ,s.url as site
+                    ,s.name as siteName
                 from resul l
                 join page p on p.id  = l.page_id
                 join site s on s.id  = p.site_id
                 limit :limit offset :offset""";
     public static final String STATISTIC_TOTAL_SQL = """
-            select (select count(1)
+            select new ru.pankov.pojo.statistic.TotalStatistic( (select count(1)
                       from site s) sites
                    ,(select count(1)
                        from page) pages
                    ,(select count(1)
-                       from lemma) lemmas
+                       from lemma) lemmas)
             """;
     public static final String STATISTIC_DETAIL_SQL = """
             select s.url
@@ -83,8 +85,10 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
             """;
     List<SiteEntity> findBySiteStatus(int siteStatus);
 
+    SiteEntity findByName(String name);
+
     @Query(value = SEARCH_SQL, nativeQuery = true)
-    List<SearchResult> search(@Param("site") String site, @Param("lemmasList") List<String> lemmasList, @Param("offset") int offset, @Param("limit") int limit);
+    List<SearchResultInterface> searchResult(@Param("site") String site, @Param("lemmasList") List<String> lemmasList, @Param("offset") int offset, @Param("limit") int limit);
 
     @Query(value = STATISTIC_TOTAL_SQL, nativeQuery = true)
     TotalStatistic getStatisticTotal();

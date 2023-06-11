@@ -4,15 +4,14 @@ import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
-import ru.pankov.pojo.api.request.IndexRequest;
-import ru.pankov.pojo.statistic.ResultStatistic;
-import ru.pankov.pojo.api.response.IndexResponse;
+import ru.pankov.dto.api.request.IndexRequest;
+import ru.pankov.dto.statistic.ResultStatistic;
+import ru.pankov.dto.api.response.IndexResponse;
 import ru.pankov.services.siteparser.SiteIndexerService;
 import ru.pankov.services.siteparser.SitesIndexerService;
 
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 

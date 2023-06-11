@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.pankov.entities.SiteEntity;
-import ru.pankov.pojo.statistic.ResultStatistic;
+import ru.pankov.dto.statistic.ResultStatistic;
 import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;

@@ -16,7 +16,7 @@ spring:
       dialect: org.hibernate.dialect.PostgreSQLDialect
     hibernate:
       ddl-auto: update
-    show-sql: true
+    show-sql: false
 
 site-list: http://www.playback.ru/
           ,https://volochek.life/
@@ -35,8 +35,19 @@ user-agent: XSearchBot
 logging:
   level:
     org:
+      springframework:
+        transaction: OFF
+        jdbc:
+          core:
+            JdbcTemplate: OFF
+          StatementCreatorUtils: OFF
       hibernate:
-        SQL: trace
+        type: OFF
+        SQL: OFF
+        engine:
+          transaction:
+            internal:
+              TransactionImpl: OFF
       type:
         descriptor:
           sql:

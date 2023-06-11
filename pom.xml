@@ -13,6 +13,13 @@
         <maven.compiler.target>17</maven.compiler.target>
     </properties>
 
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>3.1.0</version>
+        <relativePath/> <!-- lookup parent from repository -->
+    </parent>
+
     <repositories>
         <repository>
             <id>skillbox-gitlab</id>
@@ -25,6 +32,12 @@
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>1.18.24</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-thymeleaf</artifactId>
+            <version>3.1.0</version>
         </dependency>
 
         <dependency>

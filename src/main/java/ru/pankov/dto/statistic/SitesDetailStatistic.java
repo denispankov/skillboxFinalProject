@@ -1,4 +1,4 @@
-package ru.pankov.pojo.statistic;
+package ru.pankov.dto.statistic;
 
 import lombok.Data;
 

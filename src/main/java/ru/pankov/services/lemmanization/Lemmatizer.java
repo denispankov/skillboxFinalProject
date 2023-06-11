@@ -2,9 +2,8 @@ package ru.pankov.services.lemmanization;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
-import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
-import ru.pankov.pojo.lemmanization.Lemma;
+import ru.pankov.dto.lemmanization.Lemma;
 
 import java.io.IOException;
 import java.util.ArrayList;

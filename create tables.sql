@@ -10,7 +10,6 @@ content text NOT null,
 site_id integer not null
 );
 create unique index path_idx on page(path, site_id);
-grant select, insert, delete, update on page to search_engine;
 
 
 create table field(
@@ -23,7 +22,6 @@ weight real NOT null CHECK (weight >= 0 and weight <= 1)
 insert into field(name, selector, weight)
 values('title', 'title', 1.0),('body', 'body', 0.8);
 
-grant select, insert on field to search_engine;
 
 create table lemma(
 id serial PRIMARY key,
@@ -33,7 +31,6 @@ site_id integer not null);
 
 create unique index lemma_idx on lemma(lemma);
 
-grant select, insert, delete, update on lemma to search_engine;
 
 create table index(
 id serial PRIMARY key,
@@ -48,7 +45,7 @@ CREATE TYPE site_status AS ENUM ('INDEXING', 'INDEXED', 'FAILED');
 
 create table site(
 id serial PRIMARY key,
-status site_status not null,
+site_status integer  not null,
 status_time timestamp with time zone NOT null,
 last_error text,
 url text NOT null,

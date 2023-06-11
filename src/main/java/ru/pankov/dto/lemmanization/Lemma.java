@@ -1,4 +1,4 @@
-package ru.pankov.pojo.lemmanization;
+package ru.pankov.dto.lemmanization;
 
 import lombok.Data;
 
@@ -16,6 +16,10 @@ public class Lemma{
     public Lemma(String lemma, double rank) {
         this.lemma = lemma;
         this.rank = rank;
+    }
+
+    public Lemma(String lemma){
+        this.lemma = lemma;
     }
 
     @Override

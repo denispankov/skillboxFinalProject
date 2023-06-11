@@ -9,4 +9,6 @@ import java.util.List;
 @Repository
 public interface LemmaRepository extends JpaRepository<LemmaEntity, Long> {
     List<LemmaEntity> findByLemmaIn (List<String> lemma);
+
+    LemmaEntity findByLemma(String lemma);
 }

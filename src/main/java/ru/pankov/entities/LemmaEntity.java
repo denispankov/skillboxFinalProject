@@ -2,7 +2,6 @@ package ru.pankov.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
-import ru.pankov.pojo.lemmanization.Lemma;
 
 @Entity
 @Table(schema = "public",name = "lemma")
@@ -20,9 +19,16 @@ public class LemmaEntity {
     @JoinColumn(name="site_id")
     private SiteEntity siteEntity;
 
+    public LemmaEntity(){};
+
     public LemmaEntity(String lemma, double frequency, SiteEntity siteEntity) {
         this.lemma = lemma;
         this.frequency = frequency;
         this.siteEntity = siteEntity;
+    }
+
+    @Override
+    public boolean equals(Object o){
+        return lemma == ((LemmaEntity)o).getLemma();
     }
 }

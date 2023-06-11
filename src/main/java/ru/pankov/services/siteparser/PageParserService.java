@@ -6,8 +6,8 @@ import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.pankov.pojo.lemmanization.Lemma;
-import ru.pankov.pojo.siteparser.Page;
+import ru.pankov.dto.lemmanization.Lemma;
+import ru.pankov.dto.siteparser.Page;
 import ru.pankov.services.lemmanization.Lemmatizer;
 
 import java.util.ArrayList;

@@ -8,7 +8,7 @@ import org.springframework.web.bind.annotation.RestController;
 @Controller
 public class SiteController {
 
-    @RequestMapping("/admin")
+    @GetMapping("/admin")
     public String getAdminPage(){
         return "index";
     }

@@ -1,4 +1,4 @@
-package ru.pankov.pojo.api.request;
+package ru.pankov.dto.api.request;
 
 import lombok.Data;
 

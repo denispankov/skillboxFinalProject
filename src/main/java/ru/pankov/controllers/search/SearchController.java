@@ -3,23 +3,21 @@ package ru.pankov.controllers.search;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import ru.pankov.pojo.api.request.SearchRequest;
-import ru.pankov.pojo.api.response.SearchResponse;
-import ru.pankov.pojo.search.SearchResult;
-import ru.pankov.services.search.Searcher;
+import ru.pankov.dto.api.request.SearchRequest;
+import ru.pankov.dto.api.response.SearchResponse;
+import ru.pankov.dto.search.SearchResult;
+import ru.pankov.services.search.SearchService;
 
 import java.util.List;
-import java.util.Map;
 
 @RestController
 public class SearchController {
 
-    Searcher searcher;
+    SearchService searcher;
 
     @Autowired
-    public void setSearcher(Searcher searcher) {
+    public void setSearcher(SearchService searcher) {
         this.searcher = searcher;
     }
 
