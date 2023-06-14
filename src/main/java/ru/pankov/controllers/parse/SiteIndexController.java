@@ -43,8 +43,8 @@ public class SiteIndexController {
         return result;
     }
 
-    @PostMapping("/api/indexPage")
-    public IndexResponse indexPage(@RequestBody IndexRequest req) {
+    @PostMapping(value = "/api/indexPage", consumes = {"application/x-www-form-urlencoded; charset=UTF-8"})
+    public IndexResponse indexPage(IndexRequest req) {
 
         IndexResponse result = new IndexResponse();
         String site = "";
@@ -80,14 +80,6 @@ public class SiteIndexController {
             result.setResult(true);
         }
 
-        return result;
-    }
-
-    @GetMapping("/api/statistics")
-    public ResultStatistic getStatistic() {
-
-        ResultStatistic result = indexerService.getStatistic();;
-        result.setResult(true);
         return result;
     }
 }

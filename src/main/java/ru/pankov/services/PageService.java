@@ -2,6 +2,7 @@ package ru.pankov.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.entities.IndexEntity;
 import ru.pankov.entities.LemmaEntity;
 import ru.pankov.entities.PageEntity;
@@ -72,4 +73,21 @@ public class PageService {
         indexRepository.saveAll(indexEntities);
     }
 
+    @Transactional
+    public void deletePage(String pageUrl) {
+
+        PageEntity pageEntity = pageRepository.findByPath(pageUrl);
+
+        List<IndexEntity> indexEntityList = indexRepository.findByPageEntity(pageEntity);
+        indexRepository.deleteAll(indexEntityList);
+
+        for(IndexEntity indexEntity: indexEntityList){
+            LemmaEntity lemmaEntity = indexEntity.getLemmaEntity();
+            lemmaEntity.setFrequency(lemmaEntity.getFrequency() - 1);
+            lemmaRepository.save(lemmaEntity);
+        }
+
+        pageRepository.delete(pageEntity);
+
+    }
 }

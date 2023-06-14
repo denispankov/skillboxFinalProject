@@ -10,6 +10,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.dao.OptimisticLockingFailureException;
 import ru.pankov.entities.PageEntity;
 import ru.pankov.entities.SiteEntity;
+import ru.pankov.enums.SiteStatus;
 import ru.pankov.repositories.PageRepository;
 import ru.pankov.repositories.SiteRepository;
 import ru.pankov.services.Transaction;
@@ -67,7 +68,7 @@ public class CommandLineRunnerMain implements CommandLineRunner {
         SiteEntity siteEntity = siteRepository.findByName("http://www.playback.ru/");
         if (siteEntity == null){
             siteEntity = new SiteEntity();
-            siteEntity.setSiteStatus(1);
+            siteEntity.setSiteStatus(SiteStatus.INDEXING);
             siteEntity.setName("test");
             siteEntity.setLastError("");
             siteEntity.setUrl("test");

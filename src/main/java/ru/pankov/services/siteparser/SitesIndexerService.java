@@ -7,7 +7,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import ru.pankov.entities.SiteEntity;
-import ru.pankov.dto.statistic.ResultStatistic;
+import ru.pankov.enums.SiteStatus;
 import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;
@@ -65,7 +65,7 @@ public class SitesIndexerService {
         String error = "";
         logger.info("All index start");
 
-        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(1);
+        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
 
         if (!siteEntities.isEmpty()){
             indexingIsRunning = true;
@@ -73,10 +73,10 @@ public class SitesIndexerService {
 
         if (indexingIsRunning == false) {
 
-            pageRepository.deleteAll();
-            lemmaRepository.deleteAll();
-            indexRepository.deleteAll();
-            siteRepository.deleteAll();
+            indexRepository.deleteAllWithQuery();
+            pageRepository.deleteAllWithQuery();
+            lemmaRepository.deleteAllWithQuery();
+            siteRepository.deleteAllWithQuery();
 
             for (int i = 0; i < siteList.length; i++) {
                 SiteIndexThread th = new SiteIndexThread(siteList[i]);
@@ -95,10 +95,7 @@ public class SitesIndexerService {
         boolean indexingIsRunning = false;
         String error = "";
 
-        /*toDO
-        переделать на энум, может не работать этот кусок кода, не понятно что возвращается, когда не найдены строки
-         */
-        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(1);
+        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
 
         if (!siteEntities.isEmpty()){
             indexingIsRunning = true;
@@ -106,25 +103,14 @@ public class SitesIndexerService {
 
         if (indexingIsRunning == true) {
 
-            for (SiteIndexThread th : indexProcess) {
-                th.stopIndex();
-            }
-            siteEntities = siteRepository.findBySiteStatus(1);
-            for (SiteEntity siteEntity: siteEntities){
-                siteEntity.setSiteStatus(3);
-                siteRepository.save(siteEntity);
-            }
+            SiteIndexerTaskService.isInterrupted.set(true);
 
-            logger.info("All index stoped");
+            logger.info("All index interrupted");
         } else {
             error = "Индексация не запущена";
         }
 
         return error;
-    }
-
-    public ResultStatistic getStatistic(){
-        return new ResultStatistic(siteRepository.getStatisticTotal(), siteRepository.getStatisticDetail());
     }
 
 

@@ -8,12 +8,16 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
+import ru.pankov.entities.PageEntity;
 import ru.pankov.entities.SiteEntity;
 import ru.pankov.dto.siteparser.Page;
+import ru.pankov.repositories.PageRepository;
+import ru.pankov.services.IndexService;
 import ru.pankov.services.PageService;
 
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -31,6 +35,14 @@ public class SiteIndexerTaskService extends RecursiveAction {
     private PageService pageService;
 
     private Logger logger;
+
+    public static AtomicBoolean isInterrupted = new AtomicBoolean(false);
+
+    @Autowired
+    private PageRepository pageRepository;
+
+    @Autowired
+    private IndexService indexService;
 
     @Autowired
     @Qualifier("logger")
@@ -58,8 +70,11 @@ public class SiteIndexerTaskService extends RecursiveAction {
 
     @Override
     protected void compute() {
+        if (SiteIndexerTaskService.isInterrupted.get()){
+            return;
+        }
         try {
-            Thread.sleep(1000);
+            Thread.sleep(500);
         } catch (InterruptedException e) {
             e.printStackTrace();
         }
@@ -98,7 +113,29 @@ public class SiteIndexerTaskService extends RecursiveAction {
 
         while (true) {
             try {
+                pageService.indexPage(newPage);
+            } catch (DataIntegrityViolationException exception) {
+                continue;
+            } catch (OptimisticLockingFailureException optimisticLockException) {
+                continue;
+            } catch (Exception e) {
+                continue;
+            }
+            break;
+        }
 
+        return newPage;
+    }
+
+    public Page indexSinglePage() {
+        Page newPage = pageParser.parse(pageLink);
+        newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
+        pageService.deletePage((newPage.getRelativePageLink()));
+        newPage.setSiteEntity(siteEntity);
+        newPage.setRelativePageLink(pageLink.replaceAll(mainPageURL, ""));
+
+        while (true) {
+            try {
                 pageService.indexPage(newPage);
             } catch (DataIntegrityViolationException exception) {
                 continue;

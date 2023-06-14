@@ -13,9 +13,6 @@ public class ResultStatistic{
             total = null;
             detailed = new ArrayList<>();
         }
-        public void addDetail(SitesDetailStatistic det){
-            detailed.add(det);
-        }
 
         private TotalStatistic total;
         private List<SitesDetailStatistic> detailed;

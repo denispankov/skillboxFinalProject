@@ -2,6 +2,7 @@ package ru.pankov.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import ru.pankov.enums.SiteStatus;
 
 import java.time.LocalDateTime;
 
@@ -14,7 +15,8 @@ public class SiteEntity {
     @Column(name = "id", nullable = false)
     Long id;
     @Column(name = "site_status", nullable = false)
-    int siteStatus;
+    @Enumerated(EnumType.STRING)
+    SiteStatus siteStatus;
     @Column(name = "status_time", nullable = false)
     LocalDateTime statusTime;
     @Column(name = "last_error", columnDefinition="text")

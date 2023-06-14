@@ -29,4 +29,8 @@ public class IndexEntity {
         this.lemmaEntity = lemmaEntity;
         this.rank = rank;
     }
+
+    public IndexEntity(){
+
+    }
 }

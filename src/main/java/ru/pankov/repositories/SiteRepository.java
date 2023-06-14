@@ -1,14 +1,19 @@
 package ru.pankov.repositories;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
+import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.dto.search.SearchResultInterface;
+import ru.pankov.dto.statistic.SitesDetailStatisticInterface;
+import ru.pankov.dto.statistic.TotalStatisticInterface;
 import ru.pankov.entities.SiteEntity;
 import ru.pankov.dto.search.SearchResult;
 import ru.pankov.dto.statistic.SitesDetailStatistic;
 import ru.pankov.dto.statistic.TotalStatistic;
+import ru.pankov.enums.SiteStatus;
 
 import java.util.List;
 
@@ -62,37 +67,49 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                 join site s on s.id  = p.site_id
                 limit :limit offset :offset""";
     public static final String STATISTIC_TOTAL_SQL = """
-            select new ru.pankov.pojo.statistic.TotalStatistic( (select count(1)
+            select (select count(1)
                       from site s) sites
                    ,(select count(1)
                        from page) pages
                    ,(select count(1)
-                       from lemma) lemmas)
+                       from lemma) lemmas
+                   ,(select case when count(1) > 0 then true else false end
+                                                    from site s
+                                                   where s.site_status  = 'INDEXING'
+                                                   order by 1 desc
+                                                   limit 1) isIndexing
             """;
     public static final String STATISTIC_DETAIL_SQL = """
             select s.url
                   ,s.name
-                  ,s.status
-                  ,s.status_time
-                  ,s.last_error
+                  ,s.site_status as status
+                  ,s.status_time as statusTime
+                  ,s.last_error as error
                   ,(select count(1)
                       from page p
                      where s.id = p.site_id ) pages
                   ,(select count(1)
                       from lemma l
-                     where l.site_id  = s.id ) lemmas +
+                     where l.site_id  = s.id ) lemmas
              from site s
             """;
-    List<SiteEntity> findBySiteStatus(int siteStatus);
+    List<SiteEntity> findBySiteStatus(SiteStatus siteStatus);
 
     SiteEntity findByName(String name);
+
+    SiteEntity findByUrl(String name);
 
     @Query(value = SEARCH_SQL, nativeQuery = true)
     List<SearchResultInterface> searchResult(@Param("site") String site, @Param("lemmasList") List<String> lemmasList, @Param("offset") int offset, @Param("limit") int limit);
 
     @Query(value = STATISTIC_TOTAL_SQL, nativeQuery = true)
-    TotalStatistic getStatisticTotal();
+    TotalStatisticInterface getStatisticTotal();
 
     @Query(value = STATISTIC_DETAIL_SQL, nativeQuery = true)
-    List<SitesDetailStatistic> getStatisticDetail();
+    List<SitesDetailStatisticInterface> getStatisticDetail();
+
+    @Transactional
+    @Modifying
+    @Query(value = "delete from site", nativeQuery = true)
+    void deleteAllWithQuery();
 }

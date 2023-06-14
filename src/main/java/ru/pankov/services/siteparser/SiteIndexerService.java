@@ -9,13 +9,14 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.pankov.entities.SiteEntity;
+import ru.pankov.enums.SiteStatus;
 import ru.pankov.repositories.SiteRepository;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.ForkJoinPool;
 
 @Data
@@ -61,18 +62,21 @@ public class SiteIndexerService {
         forkJoinPool = new ForkJoinPool();
         try {
             forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, mainPageUrl, siteEntity));
-            siteEntity.setSiteStatus(2);
-            siteRepository.save(siteEntity);
-        }catch (CancellationException ce){
-            siteEntity.setSiteStatus(3);
-            siteEntity.setLastError("manual stop");
-            siteRepository.save(siteEntity);
-        }
-        catch (Exception e){
+
+            if (SiteIndexerTaskService.isInterrupted.get()){
+                siteEntity.setSiteStatus(SiteStatus.FAILED);
+                siteEntity.setLastError("manual stop");
+                siteRepository.save(siteEntity);
+            }else{
+                siteEntity.setSiteStatus(SiteStatus.INDEXED);
+                siteRepository.save(siteEntity);
+            }
+
+        } catch (Exception e){
             e.printStackTrace();
             logger.info(e.getMessage() + mainPageUrl);
 
-            siteEntity.setSiteStatus(3);
+            siteEntity.setSiteStatus(SiteStatus.FAILED);
             siteEntity.setLastError(e.getMessage());
             siteRepository.save(siteEntity);
         }
@@ -80,27 +84,36 @@ public class SiteIndexerService {
     }
 
     public void stopIndex(){
-        forkJoinPool.shutdownNow();
+        List<Runnable> tasks = forkJoinPool.shutdownNow();
+        for(Runnable task: tasks){
+            task.toString();
+        }
     }
 
-    @Transactional
     public void indexPage(String url){
         logger.info("Indexing page start " + url);
         SiteEntity siteEntity = addSiteDB(mainPageUrl);
         SiteIndexerTaskService task =  taskObjectProvider.getObject(url, linksSet, mainPageUrl, siteEntity);
-        task.indexPage();
+        task.indexSinglePage();
         logger.info("Indexing page finish " + url);
     }
 
     @Transactional
     private SiteEntity addSiteDB(String mainPageUrl){
-        SiteEntity siteEntity = new SiteEntity();
-        siteEntity.setUrl(mainPageUrl);
-        siteEntity.setName(mainPageUrl);
-        siteEntity.setSiteStatus(1);
-        siteEntity.setStatusTime(LocalDateTime.now());
 
-        SiteEntity newSiteEntity  = siteRepository.save(siteEntity);
-        return newSiteEntity;
+        SiteEntity siteEntity = siteRepository.findByUrl(mainPageUrl);
+
+        if (siteEntity == null) {
+            siteEntity = new SiteEntity();
+            siteEntity.setUrl(mainPageUrl);
+            siteEntity.setName(mainPageUrl);
+            siteEntity.setSiteStatus(SiteStatus.INDEXING);
+            siteEntity.setStatusTime(LocalDateTime.now());
+
+            SiteEntity newSiteEntity  = siteRepository.save(siteEntity);
+            return newSiteEntity;
+        }
+
+        return siteEntity;
     }
 }
