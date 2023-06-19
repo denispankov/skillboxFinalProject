@@ -6,13 +6,10 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
-import ru.pankov.dto.search.SearchResultInterface;
-import ru.pankov.dto.statistic.SitesDetailStatisticInterface;
-import ru.pankov.dto.statistic.TotalStatisticInterface;
+import ru.pankov.dto.interfaces.SearchResultInterface;
+import ru.pankov.dto.interfaces.SitesDetailStatisticInterface;
+import ru.pankov.dto.interfaces.TotalStatisticInterface;
 import ru.pankov.entities.SiteEntity;
-import ru.pankov.dto.search.SearchResult;
-import ru.pankov.dto.statistic.SitesDetailStatistic;
-import ru.pankov.dto.statistic.TotalStatistic;
 import ru.pankov.enums.SiteStatus;
 
 import java.util.List;

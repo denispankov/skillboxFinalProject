@@ -1,4 +1,4 @@
-package ru.pankov.dto.search;
+package ru.pankov.dto.interfaces;
 
 public interface SearchResultInterface {
     String getSite();

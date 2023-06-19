@@ -1,6 +1,8 @@
 package ru.pankov.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.entities.IndexEntity;
@@ -11,6 +13,7 @@ import ru.pankov.dto.siteparser.Page;
 import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;
+import ru.pankov.services.interfaces.DbCleaner;
 import ru.pankov.services.lemmanization.Lemmatizer;
 
 import java.util.List;
@@ -18,7 +21,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class PageService {
+public class PageService implements DbCleaner {
 
     @Autowired
     private PageRepository pageRepository;
@@ -35,42 +38,53 @@ public class PageService {
     @Autowired
     private LemmaService lemmaService;
 
-    public void indexPage(Page newPage) {
-        PageEntity pageEntity = new PageEntity();
-        pageEntity.setCode(newPage.getStatusCode());
-        pageEntity.setPath(newPage.getRelativePageLink());
-        pageEntity.setContent(newPage.getContent());
-        pageEntity.setSiteEntity(newPage.getSiteEntity());
+    public void saveIndexPage(Page newPage) {
+        while (true) {
+            try {
+                PageEntity pageEntity = new PageEntity();
+                pageEntity.setCode(newPage.getStatusCode());
+                pageEntity.setPath(newPage.getRelativePageLink());
+                pageEntity.setContent(newPage.getContent());
+                pageEntity.setSiteEntity(newPage.getSiteEntity());
 
-        pageRepository.save(pageEntity);
+                pageRepository.save(pageEntity);
 
-        List<Lemma> lemmasTitle = lemmatizer.getLemmas(newPage.getTitleText());
-        List<Lemma> lemmasBody = lemmatizer.getLemmas(newPage.getContentText());
-        lemmasTitle.forEach(l -> l.setRank(l.getCount()));
-        lemmasBody.forEach(l -> l.setRank(l.getCount() * 0.8));
+                List<Lemma> lemmasTitle = lemmatizer.getLemmas(newPage.getTitleText());
+                List<Lemma> lemmasBody = lemmatizer.getLemmas(newPage.getContentText());
+                lemmasTitle.forEach(l -> l.setRank(l.getCount()));
+                lemmasBody.forEach(l -> l.setRank(l.getCount() * 0.8));
 
-        lemmasTitle.addAll(lemmasBody);
+                lemmasTitle.addAll(lemmasBody);
 
 
-        List<Lemma> lemmaTitleBody = lemmasTitle.stream()
-                .collect(Collectors.toMap(e -> e, e -> e.getRank(), Double::sum))
-                .entrySet()
-                .stream()
-                .map(e -> {
-                    Lemma lemma = e.getKey();
-                    lemma.setRank(e.getValue());
-                    return lemma;
-                }).collect(Collectors.toList());
+                List<Lemma> lemmaTitleBody = lemmasTitle.stream()
+                        .collect(Collectors.toMap(e -> e, e -> e.getRank(), Double::sum))
+                        .entrySet()
+                        .stream()
+                        .map(e -> {
+                            Lemma lemma = e.getKey();
+                            lemma.setRank(e.getValue());
+                            return lemma;
+                        }).collect(Collectors.toList());
 
-        List<LemmaEntity> lemmasNewAndOld;
+                List<LemmaEntity> lemmasNewAndOld;
 
-        lemmasNewAndOld = lemmaService.saveLemmas(lemmaTitleBody, newPage);
+                lemmasNewAndOld = lemmaService.saveLemmas(lemmaTitleBody, newPage);
 
-        Map<String, Double> lemmaDoubleMap = lemmaTitleBody.stream().collect(Collectors.toMap(e -> e.getLemma(), e -> e.getRank(), Double::sum));
+                Map<String, Double> lemmaDoubleMap = lemmaTitleBody.stream().collect(Collectors.toMap(e -> e.getLemma(), e -> e.getRank(), Double::sum));
 
-        List<IndexEntity> indexEntities = lemmasNewAndOld.stream().map(l -> new IndexEntity(pageEntity, l, lemmaDoubleMap.get(l.getLemma()))).collect(Collectors.toList());
+                List<IndexEntity> indexEntities = lemmasNewAndOld.stream().map(l -> new IndexEntity(pageEntity, l, lemmaDoubleMap.get(l.getLemma()))).collect(Collectors.toList());
 
-        indexRepository.saveAll(indexEntities);
+                indexRepository.saveAll(indexEntities);
+            } catch (DataIntegrityViolationException exception) {
+                continue;
+            } catch (OptimisticLockingFailureException optimisticLockException) {
+                continue;
+            } catch (Exception e) {
+                continue;
+            }
+            break;
+        }
     }
 
     @Transactional
@@ -81,7 +95,7 @@ public class PageService {
         List<IndexEntity> indexEntityList = indexRepository.findByPageEntity(pageEntity);
         indexRepository.deleteAll(indexEntityList);
 
-        for(IndexEntity indexEntity: indexEntityList){
+        for (IndexEntity indexEntity : indexEntityList) {
             LemmaEntity lemmaEntity = indexEntity.getLemmaEntity();
             lemmaEntity.setFrequency(lemmaEntity.getFrequency() - 1);
             lemmaRepository.save(lemmaEntity);
@@ -89,5 +103,9 @@ public class PageService {
 
         pageRepository.delete(pageEntity);
 
+    }
+
+    public void deleteAll(){
+        pageRepository.deleteAllWithQuery();
     }
 }

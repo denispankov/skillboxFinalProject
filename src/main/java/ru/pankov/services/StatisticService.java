@@ -5,7 +5,7 @@ import org.springframework.stereotype.Service;
 import ru.pankov.dto.statistic.ResultStatistic;
 import ru.pankov.dto.statistic.SitesDetailStatistic;
 import ru.pankov.dto.statistic.TotalStatistic;
-import ru.pankov.dto.statistic.TotalStatisticInterface;
+import ru.pankov.dto.interfaces.TotalStatisticInterface;
 import ru.pankov.repositories.SiteRepository;
 
 import java.util.List;

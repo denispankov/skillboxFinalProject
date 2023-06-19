@@ -1,4 +1,4 @@
-package ru.pankov.dto.statistic;
+package ru.pankov.dto.interfaces;
 
 public interface SitesDetailStatisticInterface {
     String getUrl();

@@ -12,74 +12,50 @@ import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;
 import ru.pankov.repositories.SiteRepository;
+import ru.pankov.services.IndexService;
+import ru.pankov.services.LemmaService;
+import ru.pankov.services.PageService;
+import ru.pankov.services.SiteService;
+import ru.pankov.services.interfaces.DbCleaner;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Service
 public class SitesIndexerService {
+    @Autowired
+    @Qualifier("logger")
     private Logger logger;
     @Autowired
-    private ObjectProvider<SiteIndexerService> siteIndexerObjectProvider;
+    private ObjectProvider<SiteIndexThread> siteIndexerThreadProvider;
     @Value("${site-list}")
     private String[] siteList;
     private List<SiteIndexThread> indexProcess = new ArrayList<>();
+    public static AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
     @Autowired
-    private PageRepository pageRepository;
-    @Autowired
-    private LemmaRepository lemmaRepository;
-    @Autowired
-    private IndexRepository indexRepository;
-    @Autowired
-    private SiteRepository siteRepository;
-
+    private SiteService siteService;
 
     @Autowired
-    @Qualifier("logger")
-    public void setLogger(Logger logger){
-        this.logger = logger;
-    }
-
-    private class SiteIndexThread extends Thread {
-        private String siteUrl;
-        private SiteIndexerService site;
-
-        public SiteIndexThread(String siteUrl) {
-            super();
-            this.siteUrl = siteUrl;
-        }
-
-        public void run() {
-            site = siteIndexerObjectProvider.getObject(siteUrl);
-            site.createIndex();
-        }
-
-        public void stopIndex(){
-            site.stopIndex();
-        }
-    }
+    List<DbCleaner> dbCleaners;
 
     public String indexAll() {
         boolean indexingIsRunning = false;
         String error = "";
         logger.info("All index start");
 
-        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
 
-        if (!siteEntities.isEmpty()){
+        if (siteService.indexingSiteExists()){
             indexingIsRunning = true;
         }
 
         if (indexingIsRunning == false) {
 
-            indexRepository.deleteAllWithQuery();
-            pageRepository.deleteAllWithQuery();
-            lemmaRepository.deleteAllWithQuery();
-            siteRepository.deleteAllWithQuery();
+            dbCleaners.forEach(c -> c.deleteAll());
 
             for (int i = 0; i < siteList.length; i++) {
-                SiteIndexThread th = new SiteIndexThread(siteList[i]);
+                SiteIndexThread th = siteIndexerThreadProvider.getObject(siteList[i]);
                 th.start();
                 indexProcess.add(th);
             }
@@ -95,15 +71,14 @@ public class SitesIndexerService {
         boolean indexingIsRunning = false;
         String error = "";
 
-        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
 
-        if (!siteEntities.isEmpty()){
+        if (siteService.indexingSiteExists()){
             indexingIsRunning = true;
         }
 
         if (indexingIsRunning == true) {
 
-            SiteIndexerTaskService.isInterrupted.set(true);
+            SitesIndexerService.isInterrupted.set(true);
 
             logger.info("All index interrupted");
         } else {
@@ -112,6 +87,4 @@ public class SitesIndexerService {
 
         return error;
     }
-
-
 }

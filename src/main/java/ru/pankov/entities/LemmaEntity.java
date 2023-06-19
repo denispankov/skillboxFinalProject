@@ -3,6 +3,8 @@ package ru.pankov.entities;
 import jakarta.persistence.*;
 import lombok.Data;
 
+import java.util.Set;
+
 @Entity
 @Table(schema = "public",name = "lemma")
 @Data
@@ -18,6 +20,11 @@ public class LemmaEntity {
     @ManyToOne(optional=false, cascade = {CascadeType.MERGE})
     @JoinColumn(name="site_id")
     private SiteEntity siteEntity;
+
+    @OneToMany(mappedBy = "lemmaEntity")
+    private Set<IndexEntity> indexEntitySet;
+
+
 
     public LemmaEntity(){};
 
