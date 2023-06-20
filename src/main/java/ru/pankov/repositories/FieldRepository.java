@@ -6,4 +6,6 @@ import ru.pankov.entities.FieldEntity;
 
 @Repository
 public interface FieldRepository extends JpaRepository<FieldEntity,Long> {
+
+    FieldEntity findByName(String name);
 }

@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Set;
 
 @Entity
-@Table(schema = "public",name = "lemma")
+@Table(schema = "public",name = "lemma",indexes = {@Index(name = "lemma_idx", columnList = "lemma",unique = true)})
 @Data
 public class LemmaEntity {
     @Id

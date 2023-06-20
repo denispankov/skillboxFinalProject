@@ -5,6 +5,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.pankov.entities.FieldEntity;
 import ru.pankov.entities.IndexEntity;
 import ru.pankov.entities.LemmaEntity;
 import ru.pankov.entities.PageEntity;
@@ -14,7 +15,7 @@ import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;
 import ru.pankov.services.interfaces.DbCleaner;
-import ru.pankov.services.lemmanization.Lemmatizer;
+import ru.pankov.services.lemmanization.LemmatizerService;
 
 import java.util.List;
 import java.util.Map;
@@ -27,7 +28,7 @@ public class PageService implements DbCleaner {
     private PageRepository pageRepository;
 
     @Autowired
-    private Lemmatizer lemmatizer;
+    private LemmatizerService lemmatizer;
 
     @Autowired
     private IndexRepository indexRepository;
@@ -38,7 +39,12 @@ public class PageService implements DbCleaner {
     @Autowired
     private LemmaService lemmaService;
 
+    @Autowired
+    private FieldService fieldService;
+
     public void saveIndexPage(Page newPage) {
+        FieldEntity fieldTitle = fieldService.getFieldByName("title");
+        FieldEntity fieldBody = fieldService.getFieldByName("body");
         while (true) {
             try {
                 PageEntity pageEntity = new PageEntity();
@@ -51,8 +57,8 @@ public class PageService implements DbCleaner {
 
                 List<Lemma> lemmasTitle = lemmatizer.getLemmas(newPage.getTitleText());
                 List<Lemma> lemmasBody = lemmatizer.getLemmas(newPage.getContentText());
-                lemmasTitle.forEach(l -> l.setRank(l.getCount()));
-                lemmasBody.forEach(l -> l.setRank(l.getCount() * 0.8));
+                lemmasTitle.forEach(l -> l.setRank(l.getCount() * fieldTitle.getWeight()));
+                lemmasBody.forEach(l -> l.setRank(l.getCount() * fieldBody.getWeight()));
 
                 lemmasTitle.addAll(lemmasBody);
 

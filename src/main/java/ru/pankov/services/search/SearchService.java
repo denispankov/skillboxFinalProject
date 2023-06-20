@@ -6,7 +6,7 @@ import ru.pankov.dto.lemmanization.Lemma;
 import ru.pankov.dto.search.SearchResult;
 import ru.pankov.dto.interfaces.SearchResultInterface;
 import ru.pankov.repositories.SiteRepository;
-import ru.pankov.services.lemmanization.Lemmatizer;
+import ru.pankov.services.lemmanization.LemmatizerService;
 import ru.pankov.services.siteparser.PageParserService;
 
 import java.util.ArrayList;
@@ -16,7 +16,7 @@ import java.util.stream.Collectors;
 @Service
 public class SearchService {
     @Autowired
-    Lemmatizer lemmatizer;
+    LemmatizerService lemmatizer;
     @Autowired
     SiteRepository siteRepository;
 

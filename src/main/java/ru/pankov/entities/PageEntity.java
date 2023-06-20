@@ -6,7 +6,7 @@ import lombok.Data;
 import java.util.Set;
 
 @Entity
-@Table(schema = "public",name = "page")
+@Table(schema = "public",name = "page", indexes = {@Index(name = "path_idx", columnList = "path, site_id", unique = true)})
 @Data
 public class PageEntity {
     @Id

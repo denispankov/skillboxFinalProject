@@ -8,7 +8,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.pankov.dto.lemmanization.Lemma;
 import ru.pankov.dto.siteparser.Page;
-import ru.pankov.services.lemmanization.Lemmatizer;
+import ru.pankov.services.lemmanization.LemmatizerService;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -18,10 +18,10 @@ import java.util.stream.Stream;
 
 @Service
 public class PageParserService {
-    private Lemmatizer lemmatizer;
+    private LemmatizerService lemmatizer;
 
     @Autowired
-    public void setLemmatizer(Lemmatizer lemmatizer) {
+    public void setLemmatizer(LemmatizerService lemmatizer) {
         this.lemmatizer = lemmatizer;
     }
 

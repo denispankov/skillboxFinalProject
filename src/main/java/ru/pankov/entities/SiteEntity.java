@@ -7,7 +7,7 @@ import ru.pankov.enums.SiteStatus;
 import java.time.LocalDateTime;
 
 @Entity
-@Table(schema = "public",name = "site")
+@Table(schema = "public",name = "site", indexes = {@Index(name = "site_url_idx", columnList = "url", unique = true)})
 @Data
 public class SiteEntity {
     @Id

@@ -13,10 +13,10 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 @Service
-public class Lemmatizer {
+public class LemmatizerService {
     private LuceneMorphology luceneMorphology;
 
-    public Lemmatizer() {
+    public LemmatizerService() {
         try {
             luceneMorphology = new RussianLuceneMorphology();
         } catch (IOException e) {

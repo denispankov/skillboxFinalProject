@@ -1,11 +1,14 @@
 package ru.pankov.entities;
 
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 @Entity
 @Table(schema = "public",name = "field")
 @Data
+@NoArgsConstructor
 public class FieldEntity {
     @Id
     @GeneratedValue
@@ -17,4 +20,10 @@ public class FieldEntity {
     String selector;
     @Column(name = "weight", nullable = false)
     float weight;
+
+    public FieldEntity(String name, String selector, float weight) {
+        this.name = name;
+        this.selector = selector;
+        this.weight = weight;
+    }
 }
