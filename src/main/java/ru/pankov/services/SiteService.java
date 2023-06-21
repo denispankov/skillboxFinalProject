@@ -50,4 +50,8 @@ public class SiteService implements DbCleaner {
 
         return !siteEntities.isEmpty();
     }
+
+    public SiteStatus getSiteStatus(SiteEntity siteEntity){
+        return siteRepository.findByName(siteEntity.getName()).getSiteStatus();
+    }
 }

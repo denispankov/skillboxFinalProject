@@ -8,10 +8,11 @@ import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
 import ru.pankov.entities.SiteEntity;
 import ru.pankov.dto.siteparser.Page;
+import ru.pankov.enums.SiteStatus;
+import ru.pankov.services.SiteService;
 
 import java.util.*;
 import java.util.concurrent.RecursiveAction;
-import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 
 @Service
@@ -20,6 +21,8 @@ public class SiteIndexerTaskService extends RecursiveAction {
     private String pageLink;
     private Set<String> linksSet;
     private SiteEntity siteEntity;
+    @Autowired
+    private SiteService siteService;
 
     private final int DELAY_MILLISECONDS = 500;
 
@@ -59,19 +62,26 @@ public class SiteIndexerTaskService extends RecursiveAction {
 
         Page newPage = pageIndexerService.indexPage(pageLink, siteEntity, false);
 
+        List<String> newPageLinks = new ArrayList<>();
         List<String> pageLinks = newPage.getLinks();
-        List<String> newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(siteEntity.getUrl())).distinct().collect(Collectors.toList());
-        linksSet.addAll(newPageLinks);
+        synchronized (linksSet) {
+            newPageLinks = pageLinks.stream().filter(link -> !linksSet.contains(link) & link.contains(siteEntity.getUrl())).distinct().collect(Collectors.toList());
+            linksSet.addAll(newPageLinks);
+        }
 
         List<SiteIndexerTaskService> taskList = new ArrayList<>();
         for (String link : newPageLinks) {
-            SiteIndexerTaskService task = taskObjectProvider.getObject(link, linksSet, siteEntity.getUrl(), siteEntity);
+            SiteIndexerTaskService task = taskObjectProvider.getObject(link, linksSet, siteEntity);
             task.fork();
             taskList.add(task);
         }
 
-        for (SiteIndexerTaskService task : taskList) {
-            task.join();
+        try {
+            for (SiteIndexerTaskService task : taskList) {
+                task.join();
+            }
+        }catch (Exception e){
+            siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, e.getMessage());
         }
         if (siteEntity.getUrl().equals(pageLink)) {
             logger.info("End parsing");

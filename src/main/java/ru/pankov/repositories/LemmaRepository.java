@@ -6,12 +6,13 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.entities.LemmaEntity;
+import ru.pankov.entities.SiteEntity;
 
 import java.util.List;
 
 @Repository
 public interface LemmaRepository extends JpaRepository<LemmaEntity, Long> {
-    List<LemmaEntity> findByLemmaIn (List<String> lemma);
+    List<LemmaEntity> findByLemmaInAndSiteEntity (List<String> lemma, SiteEntity siteEntity);
 
     LemmaEntity findByLemma(String lemma);
 

@@ -69,7 +69,9 @@ public class SiteIndexerService {
             if (SitesIndexerService.isInterrupted.get()){
                 siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, "manual stop");
             }else{
-                siteService.changeSiteStatus(siteEntity, SiteStatus.INDEXED, "");
+                if(siteService.getSiteStatus(siteEntity) == SiteStatus.INDEXING) {
+                    siteService.changeSiteStatus(siteEntity, SiteStatus.INDEXED, "");
+                }
             }
 
         } catch (Exception e){

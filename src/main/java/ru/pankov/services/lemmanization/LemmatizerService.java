@@ -27,10 +27,10 @@ public class LemmatizerService {
     public List<Lemma> getLemmas(String text) {
         List<String> filteredWords = new ArrayList<>();
         String textForLemmas = text.toLowerCase().replaceAll("[^А-я ]", "");
-        if (textForLemmas != "") {
+        if (!textForLemmas.equals("")) {
             try {
                 Arrays.stream(textForLemmas.split(" ")).forEach(word -> {
-                    if (word != "") {
+                    if (!word.equals("")) {
                         List<String> lemmas = luceneMorphology.getMorphInfo(word);
                         if (!lemmas.get(0).matches(".*[СОЮЗ|МЕЖД|ПРЕДЛ|ЧАСТ]")) {
                             filteredWords.add(luceneMorphology.getNormalForms(word).get(0));

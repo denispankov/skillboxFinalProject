@@ -75,7 +75,14 @@ public class PageService implements DbCleaner {
 
                 List<LemmaEntity> lemmasNewAndOld;
 
-                lemmasNewAndOld = lemmaService.saveLemmas(lemmaTitleBody, newPage);
+                while (true) {
+                    try {
+                        lemmasNewAndOld = lemmaService.saveLemmas(lemmaTitleBody, newPage);
+                    } catch (DataIntegrityViolationException exception) {
+                        continue;
+                    }
+                    break;
+                }
 
                 Map<String, Double> lemmaDoubleMap = lemmaTitleBody.stream().collect(Collectors.toMap(e -> e.getLemma(), e -> e.getRank(), Double::sum));
 
@@ -83,10 +90,6 @@ public class PageService implements DbCleaner {
 
                 indexRepository.saveAll(indexEntities);
             } catch (DataIntegrityViolationException exception) {
-                continue;
-            } catch (OptimisticLockingFailureException optimisticLockException) {
-                continue;
-            } catch (Exception e) {
                 continue;
             }
             break;

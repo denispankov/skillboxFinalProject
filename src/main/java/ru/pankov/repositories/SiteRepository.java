@@ -29,7 +29,7 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                          from lemma l
                          join site s on s.id  = l.site_id 
                         where l.lemma in (:lemmasList)
-                          and (s.\"name\"  =  :site or '' = :site)
+                          and (s.\"name\"  =  :site or :site = '')
             ),
             tempor as (select l.lemma 
                               ,l.frequency 
@@ -62,6 +62,7 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                 from resul l
                 join page p on p.id  = l.page_id
                 join site s on s.id  = p.site_id
+                order by l.rel_rel desc
                 limit :limit offset :offset""";
     public static final String STATISTIC_TOTAL_SQL = """
             select (select count(1)
