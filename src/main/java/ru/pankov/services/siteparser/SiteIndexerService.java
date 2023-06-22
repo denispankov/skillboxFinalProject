@@ -34,6 +34,7 @@ public class SiteIndexerService {
 
     private ForkJoinPool forkJoinPool;
 
+    @Autowired
     private PageIndexerService pageIndexerService;
 
     @Autowired
@@ -60,6 +61,7 @@ public class SiteIndexerService {
     public void createIndex() {
         logger.info("Indexing start" + mainPageUrl);
 
+        SitesIndexerService.isInterrupted.set(false);
         SiteEntity siteEntity = siteService.addSiteDB(mainPageUrl);
 
         forkJoinPool = new ForkJoinPool();

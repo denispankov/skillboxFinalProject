@@ -79,6 +79,7 @@ public class SitesIndexerService {
         if (indexingIsRunning == true) {
 
             SitesIndexerService.isInterrupted.set(true);
+            siteService.interruptAllManual();
 
             logger.info("All index interrupted");
         } else {

@@ -7,11 +7,10 @@
 - java
 	- spring boot
 	- hibernate, jpa
-	- junit
 - postgresql
 
 ## Развертывание
-Для создания пользователя и базы данных нужно выполнить скрипт create tables.sql в корне проекта или запустить файл ./docker_db/up docker compose.bat(docker, windows).
+Для создания пользователя и базы данных нужно выполнить скрипт ./docker_db/db_init/create user_db.sql в корне проекта или запустить файл ./docker_db/up docker compose.bat(docker, windows).
 Для скачивания некоторых бибилотек нужно добавить\отредактировать файл settings.xml в дерикториях
 
 В Windows он располагается в директории

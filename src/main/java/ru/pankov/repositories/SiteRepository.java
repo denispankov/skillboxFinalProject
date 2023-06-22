@@ -35,6 +35,7 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                               ,l.frequency 
                               ,l.frequency / (select cnt from quantity_lemmas) percent
                               ,l.id
+                              ,row_number() over(partition by l.lemma order by l.frequency / (select cnt from quantity_lemmas) desc)  rn
                          from lemmas l),
              res as (select string_agg(t.lemma, ', ') agg
                             ,sum(i.\"rank\") rel
@@ -43,7 +44,7 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
                             ,i.page_id 
                        from tempor t
                        join \"index\" i on i.lemma_id = t.id
-                      where t.percent <= 0.065
+                      where t.percent <= 0.065 or t.rn = 1
                       group by i.page_id),
              resul as (select r.agg
                               ,r.cnt

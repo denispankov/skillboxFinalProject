@@ -54,4 +54,13 @@ public class SiteService implements DbCleaner {
     public SiteStatus getSiteStatus(SiteEntity siteEntity){
         return siteRepository.findByName(siteEntity.getName()).getSiteStatus();
     }
+
+    public SiteEntity getSiteByUrl(String url){
+        return siteRepository.findByUrl(url);
+    }
+
+    public void interruptAllManual(){
+        List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
+        siteEntities.forEach(e -> changeSiteStatus(e, SiteStatus.FAILED, "manual stop"));
+    }
 }
