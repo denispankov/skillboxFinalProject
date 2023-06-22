@@ -2,7 +2,6 @@ package ru.pankov.services;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.dao.OptimisticLockingFailureException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.entities.FieldEntity;
@@ -14,7 +13,6 @@ import ru.pankov.dto.siteparser.Page;
 import ru.pankov.repositories.IndexRepository;
 import ru.pankov.repositories.LemmaRepository;
 import ru.pankov.repositories.PageRepository;
-import ru.pankov.services.interfaces.DbCleaner;
 import ru.pankov.services.lemmanization.LemmatizerService;
 
 import java.util.List;
@@ -22,7 +20,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 @Service
-public class PageService implements DbCleaner {
+public class PageService {
 
     @Autowired
     private PageRepository pageRepository;

@@ -6,13 +6,12 @@ import ru.pankov.entities.LemmaEntity;
 import ru.pankov.dto.lemmanization.Lemma;
 import ru.pankov.dto.siteparser.Page;
 import ru.pankov.repositories.LemmaRepository;
-import ru.pankov.services.interfaces.DbCleaner;
 
 import java.util.List;
 import java.util.stream.Collectors;
 
 @Service
-public class LemmaService implements DbCleaner {
+public class LemmaService {
 
     @Autowired
     private LemmaRepository lemmaRepository;

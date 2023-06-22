@@ -12,7 +12,7 @@ public interface PageRepository extends JpaRepository<PageEntity, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "delete from page", nativeQuery = true)
+    @Query(value = "truncate table page cascade", nativeQuery = true)
     void deleteAllWithQuery();
 
     PageEntity findByPath(String path);

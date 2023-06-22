@@ -6,13 +6,12 @@ import org.springframework.stereotype.Service;
 import ru.pankov.entities.SiteEntity;
 import ru.pankov.enums.SiteStatus;
 import ru.pankov.repositories.SiteRepository;
-import ru.pankov.services.interfaces.DbCleaner;
 
 import java.time.LocalDateTime;
 import java.util.List;
 
 @Service
-public class SiteService implements DbCleaner {
+public class SiteService {
     @Autowired
     SiteRepository siteRepository;
 

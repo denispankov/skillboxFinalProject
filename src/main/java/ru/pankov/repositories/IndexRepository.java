@@ -15,7 +15,7 @@ import java.util.List;
 public interface IndexRepository extends JpaRepository<IndexEntity, Long> {
     @Transactional
     @Modifying
-    @Query(value = "delete from index", nativeQuery = true)
+    @Query(value = "truncate table \"index\" cascade", nativeQuery = true)
     void deleteAllWithQuery();
 
     List<IndexEntity> findByPageEntity(PageEntity pageEntity);

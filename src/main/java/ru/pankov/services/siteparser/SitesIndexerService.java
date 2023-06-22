@@ -6,17 +6,10 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import ru.pankov.entities.SiteEntity;
-import ru.pankov.enums.SiteStatus;
-import ru.pankov.repositories.IndexRepository;
-import ru.pankov.repositories.LemmaRepository;
-import ru.pankov.repositories.PageRepository;
-import ru.pankov.repositories.SiteRepository;
 import ru.pankov.services.IndexService;
 import ru.pankov.services.LemmaService;
 import ru.pankov.services.PageService;
 import ru.pankov.services.SiteService;
-import ru.pankov.services.interfaces.DbCleaner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -38,7 +31,13 @@ public class SitesIndexerService {
     private SiteService siteService;
 
     @Autowired
-    List<DbCleaner> dbCleaners;
+    private PageService pageService;
+
+    @Autowired
+    private LemmaService lemmaService;
+
+    @Autowired
+    private IndexService indexService;
 
     public String indexAll() {
         boolean indexingIsRunning = false;
@@ -52,7 +51,10 @@ public class SitesIndexerService {
 
         if (indexingIsRunning == false) {
 
-            dbCleaners.forEach(c -> c.deleteAll());
+            indexService.deleteAll();
+            pageService.deleteAll();
+            lemmaService.deleteAll();
+            siteService.deleteAll();
 
             for (int i = 0; i < siteList.length; i++) {
                 SiteIndexThread th = siteIndexerThreadProvider.getObject(siteList[i]);

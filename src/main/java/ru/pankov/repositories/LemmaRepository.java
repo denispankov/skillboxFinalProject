@@ -18,6 +18,6 @@ public interface LemmaRepository extends JpaRepository<LemmaEntity, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "delete from lemma", nativeQuery = true)
+    @Query(value = "truncate table lemma cascade", nativeQuery = true)
     void deleteAllWithQuery();
 }

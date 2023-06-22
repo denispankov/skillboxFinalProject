@@ -109,6 +109,6 @@ public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
 
     @Transactional
     @Modifying
-    @Query(value = "delete from site", nativeQuery = true)
+    @Query(value = "truncate table site cascade", nativeQuery = true)
     void deleteAllWithQuery();
 }

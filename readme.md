@@ -7,6 +7,7 @@
 - java
 	- spring boot
 	- hibernate, jpa
+	- junit 5
 - postgresql
 
 ## Развертывание
