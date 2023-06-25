@@ -25,7 +25,6 @@ public class SitesIndexerService {
     @Value("${site-list}")
     private String[] siteList;
     private List<SiteIndexThread> indexProcess = new ArrayList<>();
-    public static AtomicBoolean isInterrupted = new AtomicBoolean(false);
 
     @Autowired
     private SiteService siteService;
@@ -80,8 +79,7 @@ public class SitesIndexerService {
 
         if (indexingIsRunning == true) {
 
-            SitesIndexerService.isInterrupted.set(true);
-            siteService.interruptAllManual();
+            indexProcess.forEach(th -> th.getSiteIndexerService().setInterrupted(true));
 
             logger.info("All index interrupted");
         } else {

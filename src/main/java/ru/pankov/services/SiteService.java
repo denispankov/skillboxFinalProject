@@ -37,6 +37,7 @@ public class SiteService {
     public void changeSiteStatus(SiteEntity siteEntity, SiteStatus siteStatus, String error){
         siteEntity.setSiteStatus(siteStatus);
         siteEntity.setLastError(error);
+        siteEntity.setStatusTime(LocalDateTime.now());
         siteRepository.save(siteEntity);
     }
 
@@ -58,8 +59,8 @@ public class SiteService {
         return siteRepository.findByUrl(url);
     }
 
-    public void interruptAllManual(){
+    public void interruptAllManual(String errMsg){
         List<SiteEntity> siteEntities = siteRepository.findBySiteStatus(SiteStatus.INDEXING);
-        siteEntities.forEach(e -> changeSiteStatus(e, SiteStatus.FAILED, "manual stop"));
+        siteEntities.forEach(e -> changeSiteStatus(e, SiteStatus.FAILED, errMsg));
     }
 }

@@ -26,4 +26,9 @@ public class BeanConfiguration {
         return LoggerFactory.getLogger("main");
     }
 
+    @Bean
+    public TerminateBean getTerminateBean(){
+        return new TerminateBean();
+    }
+
 }

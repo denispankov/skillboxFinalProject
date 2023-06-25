@@ -41,7 +41,6 @@ public class PageParserService {
             Elements links = doc.select("a");
             links.forEach(link -> pageLinks.add(link.absUrl("href").replaceAll("#.*$", "")));
         } catch (Exception e) {
-            //e.printStackTrace();
         }
 
         return new Page(pageLinks, statusCode, content, url, contentLemmas, titleLemmas);

@@ -1,20 +1,19 @@
 package ru.pankov.services.siteparser;
 
+import lombok.Getter;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Service;
-import ru.pankov.entities.SiteEntity;
-import ru.pankov.enums.SiteStatus;
 import ru.pankov.services.SiteService;
 
 @Service
 @Scope("prototype")
-public class SiteIndexThread extends Thread{
+@Getter
+public class SiteIndexThread extends Thread {
     private String siteUrl;
 
-    @Autowired
-    private SiteService siteService;
+    private SiteIndexerService siteIndexerService;
     @Autowired
     private ObjectProvider<SiteIndexerService> siteIndexerObjectProvider;
 
@@ -24,11 +23,8 @@ public class SiteIndexThread extends Thread{
     }
 
     public void run() {
-        try {
-            siteIndexerObjectProvider.getObject(siteUrl).createIndex();
-        }catch (Exception e){
-            SiteEntity siteEntity = siteService.getSiteByUrl(siteUrl);
-            siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, e.getMessage());
-        }
+
+        siteIndexerService = siteIndexerObjectProvider.getObject(siteUrl);
+        siteIndexerService.createIndex();
     }
 }

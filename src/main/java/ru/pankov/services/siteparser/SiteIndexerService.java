@@ -2,6 +2,7 @@ package ru.pankov.services.siteparser;
 
 import jakarta.transaction.Transactional;
 import lombok.Data;
+import lombok.Getter;
 import org.slf4j.Logger;
 import org.springframework.beans.factory.ObjectProvider;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -19,6 +20,8 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ForkJoinPool;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 @Data
 @Service
@@ -33,6 +36,10 @@ public class SiteIndexerService {
     private Logger logger;
 
     private ForkJoinPool forkJoinPool;
+
+    private SiteEntity siteEntity;
+
+    private boolean interrupted;
 
     @Autowired
     private PageIndexerService pageIndexerService;
@@ -61,27 +68,25 @@ public class SiteIndexerService {
     public void createIndex() {
         logger.info("Indexing start" + mainPageUrl);
 
-        SitesIndexerService.isInterrupted.set(false);
-        SiteEntity siteEntity = siteService.addSiteDB(mainPageUrl);
+        interrupted = false;
+        siteEntity = siteService.addSiteDB(mainPageUrl);
 
-        forkJoinPool = new ForkJoinPool();
+        forkJoinPool = new ForkJoinPool(16);
         try {
-            forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, siteEntity));
+            forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, linksSet, this));
 
-            if (SitesIndexerService.isInterrupted.get()){
-                siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, "manual stop");
-            }else{
-                if(siteService.getSiteStatus(siteEntity) == SiteStatus.INDEXING) {
-                    siteService.changeSiteStatus(siteEntity, SiteStatus.INDEXED, "");
-                }
-            }
+            siteService.changeSiteStatus(siteEntity, SiteStatus.INDEXED, "");
 
         } catch (Exception e){
-            e.printStackTrace();
             logger.info(e.getMessage() + mainPageUrl);
-
+            interrupted = true;
             siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, e.getMessage());
+        } catch (Error error){
+            logger.info(error.getMessage() + mainPageUrl);
+            interrupted = true;
+            siteService.changeSiteStatus(siteEntity, SiteStatus.FAILED, "critical error");
         }
+        forkJoinPool.shutdown();
         logger.info("Indexing finish " + mainPageUrl);
     }
 
@@ -91,5 +96,13 @@ public class SiteIndexerService {
         SiteEntity siteEntity = siteService.addSiteDB(mainPageUrl);
         pageIndexerService.indexPage(url, siteEntity, true);
         logger.info("Indexing page finish " + url);
+    }
+    public void interruptIndexing(){
+        forkJoinPool.shutdownNow();
+        try {
+            forkJoinPool.awaitTermination(5, TimeUnit.MINUTES);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
     }
 }
