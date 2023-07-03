@@ -175,8 +175,6 @@ public class SiteIndexer {
         List<String> pageLinks = newPage.getLinks().stream().map(l -> {
             String decodedLink = l;
             try {
-                //decodedLink = decodedLink.replaceAll("%(?![0-9a-fA-F]{2})", "%25");
-                //decodedLink = decodedLink.replaceAll("\\+", "%2B");
                 decodedLink = URLDecoder.decode(l,"utf-8");
             } catch (Exception e) {
                 System.out.println(l);
