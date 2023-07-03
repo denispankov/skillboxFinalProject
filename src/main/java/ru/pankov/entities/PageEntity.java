@@ -1,13 +1,15 @@
 package ru.pankov.entities;
 
 import jakarta.persistence.*;
-import lombok.Data;
+import lombok.*;
 
 import java.util.Set;
 
 @Entity
 @Table(schema = "public",name = "page", indexes = {@Index(name = "path_idx", columnList = "path, site_id", unique = true)})
-@Data
+@Getter
+@Setter
+@NoArgsConstructor
 public class PageEntity {
     @Id
     @GeneratedValue
@@ -24,6 +26,13 @@ public class PageEntity {
     @JoinColumn (name="site_id")
     private SiteEntity siteEntity;
 
-    @OneToMany(mappedBy = "pageEntity")
-    private Set<IndexEntity> indexEntitySet;
+    @ManyToMany(mappedBy = "pageEntitySet")
+    private Set<LemmaEntity> lemmaEntitySet;
+
+    public PageEntity(String path, int code, String content, SiteEntity siteEntity) {
+        this.path = path;
+        this.code = code;
+        this.content = content;
+        this.siteEntity = siteEntity;
+    }
 }

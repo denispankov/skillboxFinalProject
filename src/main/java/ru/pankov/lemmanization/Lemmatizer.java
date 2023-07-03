@@ -1,7 +1,8 @@
-package ru.pankov.services.lemmanization;
+package ru.pankov.lemmanization;
 
 import org.apache.lucene.morphology.LuceneMorphology;
 import org.apache.lucene.morphology.russian.RussianLuceneMorphology;
+import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 import ru.pankov.dto.lemmanization.Lemma;
 
@@ -12,11 +13,11 @@ import java.util.List;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-@Service
-public class LemmatizerService {
+@Component
+public class Lemmatizer {
     private LuceneMorphology luceneMorphology;
 
-    public LemmatizerService() {
+    public Lemmatizer() {
         try {
             luceneMorphology = new RussianLuceneMorphology();
         } catch (IOException e) {
@@ -24,7 +25,7 @@ public class LemmatizerService {
         }
     }
 
-    public List<Lemma> getLemmas(String text) {
+    private List<String> getRawLemmas(String text){
         List<String> filteredWords = new ArrayList<>();
         String textForLemmas = text.toLowerCase().replaceAll("[^А-я ]", "");
         if (!textForLemmas.equals("")) {
@@ -42,6 +43,19 @@ public class LemmatizerService {
             }
         }
 
-        return filteredWords.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().map(e-> new Lemma(e.getKey(), e.getValue())).collect(Collectors.toList());
+        return filteredWords;
+    }
+
+    public List<Lemma> getLemmas(String text) {
+        List<String> filteredWords = getRawLemmas(text);
+
+        return filteredWords.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().map(e-> new Lemma(e.getKey())).collect(Collectors.toList());
+    }
+
+    public List<Lemma> getLemmasWithRank(String text, float multiplier) {
+        List<String> filteredWords = getRawLemmas(text);
+
+        return filteredWords.stream().collect(Collectors.groupingBy(Function.identity(), Collectors.counting())).entrySet().stream().map(e-> new Lemma(e.getKey(), e.getValue() * multiplier)).collect(Collectors.toList());
+
     }
 }

@@ -6,22 +6,22 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.pankov.dto.lemmanization.Lemma;
-import ru.pankov.services.lemmanization.LemmatizerService;
+import ru.pankov.lemmanization.Lemmatizer;
 
 import java.util.List;
 
-@SpringBootTest(classes = {LemmatizerService.class})
-public class LemmatizerServiceTest {
+@SpringBootTest(classes = {Lemmatizer.class})
+public class LemmatizerTest {
 
     @Autowired
-    private LemmatizerService lemmatizerService;
+    private Lemmatizer lemmatizer;
 
     @Test
     @DisplayName("Invalid parts of speech")
     public void testInvalidPartsOfSpeech(){
         String invalidPartsOfSpeech = "чтобы, ах, до, разве";
 
-        List<Lemma> lemmaList = lemmatizerService.getLemmas(invalidPartsOfSpeech);
+        List<Lemma> lemmaList = lemmatizer.getLemmas(invalidPartsOfSpeech);
 
         Assertions.assertEquals(0,lemmaList.size());
     }
@@ -31,7 +31,7 @@ public class LemmatizerServiceTest {
     public void testOnePartsOfSpeech(){
         String partOfSpeech = "тестовый";
 
-        List<Lemma> lemmaList = lemmatizerService.getLemmas(partOfSpeech);
+        List<Lemma> lemmaList = lemmatizer.getLemmas(partOfSpeech);
 
         Assertions.assertEquals(1,lemmaList.size());
     }
@@ -41,7 +41,7 @@ public class LemmatizerServiceTest {
     public void testManyPartsOfSpeech(){
         String partsOfSpeech = "тестовый, теструю, тесты";
 
-        List<Lemma> lemmaList = lemmatizerService.getLemmas(partsOfSpeech);
+        List<Lemma> lemmaList = lemmatizer.getLemmas(partsOfSpeech);
 
         Assertions.assertEquals(3,lemmaList.size());
     }

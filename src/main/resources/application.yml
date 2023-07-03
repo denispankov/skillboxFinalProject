@@ -18,16 +18,16 @@ spring:
       ddl-auto: update
     show-sql: false
 
-site-list: http://www.playback.ru/
-          ,https://volochek.life/
-          ,http://radiomv.ru/
-          ,https://ipfran.ru/
-          ,https://dimonvideo.ru/
-          ,https://nikoartgallery.com/
-          ,https://et-cetera.ru/mobile/
+site-list: https://volochek.life/
           ,https://www.lutherancathedral.ru/
-          ,https://dombulgakova.ru/
           ,https://www.svetlovka.ru/
+          #,https://dimonvideo.ru/
+          #,http://www.playback.ru/
+          #,https://et-cetera.ru/mobile/
+          #,http://radiomv.ru/
+          #,https://ipfran.ru/
+          #,https://nikoartgallery.com/
+          #,https://dombulgakova.ru/
 
 web-interface: /admin
 user-agent: XSearchBot

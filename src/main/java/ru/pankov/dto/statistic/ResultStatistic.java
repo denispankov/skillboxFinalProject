@@ -25,7 +25,8 @@ public class ResultStatistic{
     private boolean result;
     private Statistic statistics;
 
-    public ResultStatistic(TotalStatistic totalStatistic,List<SitesDetailStatistic> detailed){
+    public ResultStatistic(TotalStatistic totalStatistic,List<SitesDetailStatistic> detailed, boolean result){
         statistics = new Statistic(totalStatistic, detailed);
+        this.result = result;
     }
 }

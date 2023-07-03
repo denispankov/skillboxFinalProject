@@ -14,6 +14,8 @@ import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.transaction.PlatformTransactionManager;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
+import java.util.concurrent.ForkJoinPool;
+
 @Configuration
 @EnableTransactionManagement
 @EnableAutoConfiguration
@@ -27,8 +29,8 @@ public class BeanConfiguration {
     }
 
     @Bean
-    public TerminateBean getTerminateBean(){
-        return new TerminateBean();
+    public ForkJoinPool getForkJoinPool(){
+        return new ForkJoinPool(Runtime.getRuntime().availableProcessors());
     }
 
 }

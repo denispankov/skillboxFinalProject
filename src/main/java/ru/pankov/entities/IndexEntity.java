@@ -3,10 +3,13 @@ package ru.pankov.entities;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
 @Entity
-@Table(schema = "public",name = "index")
-@Data
+@Table(schema = "public",name = "index",indexes = {@Index(name = "index_lemma_fk_idx", columnList = "lemma_id"), @Index(name = "index_page_fk_idx", columnList = "page_id")})
+@Getter
+@Setter
 public class IndexEntity {
     @Id
     @GeneratedValue

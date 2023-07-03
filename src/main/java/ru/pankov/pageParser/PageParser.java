@@ -1,14 +1,14 @@
-package ru.pankov.services.siteparser;
+package ru.pankov.pageParser;
 
 import org.jsoup.Connection.Response;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Service;
+import org.springframework.stereotype.Component;
 import ru.pankov.dto.lemmanization.Lemma;
 import ru.pankov.dto.siteparser.Page;
-import ru.pankov.services.lemmanization.LemmatizerService;
+import ru.pankov.lemmanization.Lemmatizer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,12 +16,12 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-@Service
-public class PageParserService {
-    private LemmatizerService lemmatizer;
+@Component
+public class PageParser {
+    private Lemmatizer lemmatizer;
 
     @Autowired
-    public void setLemmatizer(LemmatizerService lemmatizer) {
+    public void setLemmatizer(Lemmatizer lemmatizer) {
         this.lemmatizer = lemmatizer;
     }
 
@@ -51,16 +51,16 @@ public class PageParserService {
     }
 
     public String getHTMLSnippet(String HTML, List<Lemma> lemmas) {
-        String HTMLText = Jsoup.parse(HTML).text();
-        StringBuilder snippet = new StringBuilder();
-        int offset = 35;
+        String HTMLText = Jsoup.parse(HTML).body().text() + Jsoup.parse(HTML).title();
+        List<String> snippet = new ArrayList<>();
+        int offset = 120;
 
         String[] words = HTMLText.split(" ");
 
         Map<String, String> wordLemmaMap = Stream.of(HTMLText.split(" ")).collect(Collectors.toMap(
                 s -> {
                     List<Lemma> lems = lemmatizer.getLemmas(s);
-                    if (lems.size() > 0) {
+                    if (!lems.isEmpty()) {
                         return lems.get(0).getLemma();
                     }
 
@@ -70,19 +70,30 @@ public class PageParserService {
                 , s -> s
                 , (v1, v2) -> v1));
 
+        List<String> wordsList = new ArrayList<>();
         for (Lemma lemma : lemmas) {
             String word = wordLemmaMap.get(lemma.getLemma());
-            if (word != null) {
+            if(word != null) {
+                wordsList.add(word);
+            }
+
+        }
+
+        for (String word : wordsList) {
                 int lemmaIndex = HTMLText.indexOf(word);
                 if (lemmaIndex != -1) {
                     int startIndex = lemmaIndex - offset > 0 ? lemmaIndex - offset : lemmaIndex;
                     int finishIndex = lemmaIndex + offset < HTMLText.length() - 1 ? lemmaIndex + offset : lemmaIndex;
+                    String snippetText = "..." + HTMLText.substring(startIndex, finishIndex) + "...";
 
-                    snippet.append(("..." + HTMLText.substring(startIndex, finishIndex) + "...").replace(word, "<b>" + word + "</b>"));
+                    for (String wordInner : wordsList){
+                        snippetText = snippetText.replace(wordInner, "<b>" + wordInner + "</b>");
+                    }
+                    snippet.add(snippetText);
                 }
-            }
         }
 
-        return snippet.toString();
+
+        return snippet.get(0);
     }
 }

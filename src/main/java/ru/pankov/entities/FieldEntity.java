@@ -1,13 +1,12 @@
 package ru.pankov.entities;
 
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Data;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Table(schema = "public",name = "field")
-@Data
+@Getter
+@Setter
 @NoArgsConstructor
 public class FieldEntity {
     @Id

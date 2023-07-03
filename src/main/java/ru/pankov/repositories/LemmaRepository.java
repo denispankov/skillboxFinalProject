@@ -14,10 +14,14 @@ import java.util.List;
 public interface LemmaRepository extends JpaRepository<LemmaEntity, Long> {
     List<LemmaEntity> findByLemmaInAndSiteEntity (List<String> lemma, SiteEntity siteEntity);
 
-    LemmaEntity findByLemma(String lemma);
+    List<LemmaEntity> findByLemmaAndSiteEntity (String lemma, SiteEntity siteEntity);
+
+    List<LemmaEntity> findByLemma(String lemma);
 
     @Transactional
     @Modifying
     @Query(value = "truncate table lemma cascade", nativeQuery = true)
     void deleteAllWithQuery();
+
+    int countBySiteEntity(SiteEntity siteEntity);
 }

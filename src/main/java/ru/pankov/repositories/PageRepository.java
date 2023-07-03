@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 import ru.pankov.entities.PageEntity;
+import ru.pankov.entities.SiteEntity;
 
 @Repository
 public interface PageRepository extends JpaRepository<PageEntity, Long> {
@@ -16,4 +17,6 @@ public interface PageRepository extends JpaRepository<PageEntity, Long> {
     void deleteAllWithQuery();
 
     PageEntity findByPath(String path);
+
+    int countBySiteEntity(SiteEntity siteEntity);
 }
