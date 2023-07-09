@@ -1,4 +1,7 @@
 spring:
+  test:
+    database:
+      replace: none
   datasource:
     url: jdbc:postgresql://localhost:5432/search_engine
     username: search_engine

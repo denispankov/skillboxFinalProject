@@ -86,22 +86,28 @@ public class SiteIndexer {
 
         interrupted = false;
         siteEntity = addSiteDB(mainPageUrl);
+        String errorMsg;
+        SiteStatus siteStatus;
 
         try {
             forkJoinPool.invoke(taskObjectProvider.getObject(mainPageUrl, this));
 
             if(interrupted){
-                changeSiteStatus(siteEntity, SiteStatus.FAILED, "manual interrupt");
+                errorMsg = "manual interrupt";
+                siteStatus = SiteStatus.FAILED;
             }else {
-                changeSiteStatus(siteEntity, SiteStatus.INDEXED, "");
+                errorMsg = "";
+                siteStatus = SiteStatus.INDEXED;
             }
         } catch (StackOverflowError stackOverflowError) {
             logger.info(stackOverflowError.getMessage() + mainPageUrl);
+            errorMsg = "critical error";
+            siteStatus = SiteStatus.FAILED;
             interrupted = true;
-            changeSiteStatus(siteEntity, SiteStatus.FAILED, "critical error");
         }
 
-        logger.info("Indexing finish " + mainPageUrl);
+        changeSiteStatus(siteEntity, siteStatus, errorMsg);
+        logger.info("Indexing finish " + mainPageUrl + " site status - " + siteStatus + " " + errorMsg);
     }
 
 
@@ -177,8 +183,8 @@ public class SiteIndexer {
             try {
                 decodedLink = URLDecoder.decode(l,"utf-8");
             } catch (Exception e) {
-                System.out.println(l);
-                e.printStackTrace();
+                logger.info("decode error for link " + decodedLink);
+                logger.info(e.getMessage());
             }
 
             return decodedLink;

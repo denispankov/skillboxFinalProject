@@ -1,4 +1,4 @@
-package services;
+package lemmanization;
 
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -44,5 +44,15 @@ public class LemmatizerTest {
         List<Lemma> lemmaList = lemmatizer.getLemmas(partsOfSpeech);
 
         Assertions.assertEquals(3,lemmaList.size());
+    }
+
+    @Test
+    @DisplayName("Test rank")
+    public void testLemmaRank(){
+        String partOfSpeech = "тестовый";
+
+        List<Lemma> lemmaList = lemmatizer.getLemmasWithRank(partOfSpeech, 0.5f);
+
+        Assertions.assertEquals(0.5f,lemmaList.get(0).getRank());
     }
 }

@@ -17,10 +17,9 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 import java.util.concurrent.ForkJoinPool;
 
 @Configuration
-@EnableTransactionManagement
 @EnableAutoConfiguration
-@ComponentScan
-@EnableJpaRepositories
+@ComponentScan(basePackages = {"ru.pankov"})
+@EnableJpaRepositories(basePackages = {"ru.pankov.repositories"})
 public class BeanConfiguration {
 
     @Bean(name="logger")

@@ -29,4 +29,12 @@ public class ResultStatistic{
         statistics = new Statistic(totalStatistic, detailed);
         this.result = result;
     }
+
+    public TotalStatistic getTotalStatistic(){
+        return statistics.getTotal();
+    }
+
+    public List<SitesDetailStatistic> getDetailedStatistic(){
+        return statistics.getDetailed();
+    }
 }
