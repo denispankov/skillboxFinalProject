@@ -18,7 +18,7 @@ import java.util.List;
 public interface SiteRepository extends JpaRepository<SiteEntity, Long> {
     List<SiteEntity> findBySiteStatus(SiteStatus siteStatus);
 
-    SiteEntity findByUrl(String name);
+    SiteEntity findByUrl(String url);
 
     @Transactional
     @Modifying

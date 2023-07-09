@@ -19,6 +19,8 @@ import ru.pankov.repositories.*;
 import ru.pankov.lemmanization.Lemmatizer;
 
 import java.io.UnsupportedEncodingException;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.net.URLDecoder;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -155,11 +157,19 @@ public class SiteIndexer {
     private SiteEntity addSiteDB(String mainPageUrl) {
 
         siteEntity = siteRepository.findByUrl(mainPageUrl);
+        String siteName;
+        try {
+            URL url = new URL(mainPageUrl);
+            String[] host = url.getHost().split("\\.");
+            siteName = host[host.length-2] + "." + host[host.length-1];
+        } catch (MalformedURLException e) {
+            throw new RuntimeException(e);
+        }
 
         if (siteEntity == null) {
             siteEntity = new SiteEntity();
             siteEntity.setUrl(mainPageUrl);
-            siteEntity.setName(mainPageUrl);
+            siteEntity.setName(siteName);
             siteEntity.setSiteStatus(SiteStatus.INDEXING);
             siteEntity.setStatusTime(LocalDateTime.now());
 

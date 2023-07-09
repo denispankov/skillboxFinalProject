@@ -5,6 +5,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.select.Elements;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 import ru.pankov.dto.lemmanization.Lemma;
 import ru.pankov.dto.siteparser.Page;
@@ -25,6 +26,12 @@ public class PageParser {
         this.lemmatizer = lemmatizer;
     }
 
+    @Value("${user-agent}")
+    private String userAgent;
+
+    @Value("${referer}")
+    private String referer;
+
     public Page parse(String url) {
         List<String> pageLinks = new ArrayList<>();
         int statusCode = 200;
@@ -32,7 +39,7 @@ public class PageParser {
         String titleLemmas = "";
         String contentLemmas = "";
         try {
-            Response response = Jsoup.connect(url).execute();
+            Response response = Jsoup.connect(url).userAgent(userAgent).referrer(referer).execute();
             statusCode = response.statusCode();
             content = response.body();
             Document doc = response.parse();
