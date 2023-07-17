@@ -57,6 +57,7 @@ public class SearchServiceImpl implements SearchService {
         SiteEntity siteEntity = siteRepository.findByUrl(site);
 
         if(query != null && !query.equals("")) {
+
             List<Lemma> requestLemmas = lemmatizer.getLemmas(query);
 
             requestLemmas.forEach(l -> l.setFrequency(lemmaRepository.findByLemma(l.getLemma())
